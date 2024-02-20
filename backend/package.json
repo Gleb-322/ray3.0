@@ -4,7 +4,7 @@
 	"description": "ray-api",
 	"main": "index.js",
 	"scripts": {
-		"dev": "nodemon src/index.js"
+		"dev": "env-cmd -f ./config/dev.env nodemon src/index.js"
 	},
 	"author": "gleb gurgurov",
 	"license": "ISC",
@@ -16,6 +16,7 @@
 		"mongoose": "^8.1.3"
 	},
 	"devDependencies": {
+		"env-cmd": "^10.1.0",
 		"nodemon": "^3.0.3"
 	}
 }
