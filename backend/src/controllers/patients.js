@@ -11,22 +11,10 @@ const createPatient = async (req, res) => {
 		await patient.save()
 		res.status(201).send(patient)
 	} catch (e) {
-		res.status(400).send(e.message)
+		res.status(400).send({ error: e.message })
 	}
 }
 
-const getPatients = async (req, res) => {
-	try {
-		const patients = await Patients.find({})
-		res.send(patients)
-	} catch (e) {
-		res.status(500).send(e)
-	}
-}
-
-const loginAdmin = async (req, res) => {}
 module.exports = {
 	createPatient,
-	getPatients,
-	loginAdmin,
 }
