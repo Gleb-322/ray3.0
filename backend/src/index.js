@@ -3,6 +3,7 @@ require('./db/mongoose')
 const patientsRouter = require('./routers/patient')
 const adminRouter = require('./routers/admin')
 const Admin = require('./models/admin')
+const bcrypt = require('bcryptjs')
 
 const app = express()
 const port = process.env.PORT
@@ -16,9 +17,11 @@ app.listen(port, () => {
 })
 
 // const f = async () => {
+// 	const password = await bcrypt.hash(process.env.PASS, 8)
+// 	console.log(password)
 // 	const createAdmin = new Admin({
-// 		login: 'admin',
-// 		password: 'admin',
+// 		login: process.env.LOGIN,
+// 		password,
 // 	})
 // 	await createAdmin.save()
 // }
