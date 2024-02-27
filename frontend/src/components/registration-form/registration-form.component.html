@@ -1,0 +1,19 @@
+<div
+  class="drop-shadow-md rounded-lg relative w-full h-full bg-white border border-opacity-30 border-r-0 border-b-0 backdrop-filter backdrop-blur-sm box-border p-20"
+>
+  <form>
+    <mat-form-field class="example-full-width">
+      <mat-label>Ваше имя и фамилия</mat-label>
+      <input matInput placeholder="Имя и Фамилия" />
+    </mat-form-field>
+    <mat-form-field class="example-full-width">
+      <mat-label>Ваш телефон</mat-label>
+      <span matTextPrefix>+373 &nbsp;</span>
+      <input type="tel" matInput placeholder="777-77777" />
+      <mat-icon matSuffix>mode_edit</mat-icon>
+    </mat-form-field>
+    <button type="submit" disabled="{{ buttonDisabled }}" mat-raised-button>
+      записаться на прием
+    </button>
+  </form>
+</div>
