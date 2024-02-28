@@ -1,16 +1,25 @@
 <div
-  class="text-stone-50 drop-shadow-md rounded-lg relative w-full h-full bg-white bg-opacity-10 border border-opacity-30 border-b-0 border-r-0 backdrop-filter backdrop-blur-sm box-border px-10 py-16"
+  class="text-stone-50 drop-shadow-md rounded-lg relative w-full h-full border border-opacity-30 box-border px-8 py-8"
 >
-  <h1 class="text-xl font-bold">Меня зовут Райчева Эвелина Николаевна</h1>
-  <p class="text-lg font-base mt-6">
+  <h1 class="text-2xl tracking-wide text-center">
+    <strong>Меня зовут Райчева Эвелина Николаевна</strong>
+    <mat-divider class="bg-white"></mat-divider>
+  </h1>
+
+  <p class="text-2xl tracking-wide font-base mt-8">
     Я специалист в области <strong>гинекологии</strong>, здесь Вы можете
     записаться ко мне на прием.
   </p>
-  <p class="mt-6">
+  <p class="mt-6 text-xl tracking-wide">
     Принимаю по будням с <strong>9:00</strong> до <strong>17:00</strong>.
   </p>
-  <p class="mt-6">Мой контактный телефон: <strong>+373(777)24-634</strong></p>
-  <p class="mt-6">
+  <p class="mt-6 text-xl tracking-wide">
+    Мой контактный телефон: <strong>+373(777)24-634</strong>
+  </p>
+  <p class="mt-6 text-xl tracking-wide">
     Мое местонахождение: <strong>г.Бендеры, ул. Протягайловская д. 4</strong>
   </p>
+  <button type="button" routerLink="/registration" mat-raised-button>
+    <mat-icon>person_add</mat-icon> {{ buttonText | uppercase }}
+  </button>
 </div>

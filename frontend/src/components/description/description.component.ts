@@ -1,7 +1,9 @@
 import { Component } from '@angular/core';
 
 @Component({
-  selector: 'description',
+  selector: 'preview-description',
   templateUrl: './description.component.html',
 })
-export class DescriptionComponent {}
+export class DescriptionComponent {
+  buttonText = 'записаться на прием';
+}

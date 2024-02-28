@@ -1,3 +1,8 @@
-<section class="w-screen h-screen bg-main-bg bg-no-repeat bg-center bg-cover">
-  <preview class="grid w-full h-full"></preview>
+<section
+  class="w-screen h-screen bg-main-bg bg-no-repeat bg-center bg-cover flex"
+>
+  <app-side-bar></app-side-bar>
+  <div class="flex justify-center items-center w-full h-full">
+    <router-outlet></router-outlet>
+  </div>
 </section>
