@@ -1,19 +1,88 @@
-<div
+<!-- <div
   class="drop-shadow-md rounded-lg bg-slate-50 w-full h-full box-border p-20"
->
-  <form>
-    <mat-form-field class="example-full-width">
+> </div>-->
+<div class="w-[600px] h-[800px] bg-slate-50 p-4">
+  <form
+    class="flex flex-col space-y-4"
+    [formGroup]="patientForm"
+    (ngSubmit)="onFormSubmit()"
+  >
+    <mat-form-field>
       <mat-label>Ваше имя и фамилия</mat-label>
-      <input matInput placeholder="Имя и Фамилия" />
+
+      <input
+        matInput
+        type="text"
+        placeholder="Имя и Фамилия"
+        formControlName="name"
+        name="name"
+        [errorStateMatcher]="matcher"
+      />
+
+      <mat-icon matSuffix class="text-gray-500">badge</mat-icon>
+      <!-- @if (patientForm.value.name.hasError('required')) {
+      <mat-error>Email is <strong>required</strong></mat-error>
+      } -->
+
+      <!-- <mat-error *ngIf="patientForm.value.name"
+        >Пожалуйста введите имя и фамилию!</mat-error
+      > -->
     </mat-form-field>
-    <mat-form-field class="example-full-width">
+
+    <mat-form-field>
       <mat-label>Ваш телефон</mat-label>
       <span matTextPrefix>+373 &nbsp;</span>
-      <input type="tel" matInput placeholder="777-77777" />
-      <mat-icon matSuffix>mode_edit</mat-icon>
+      <input
+        type="text"
+        matInput
+        placeholder="777-77777"
+        formControlName="phone"
+        name="phone"
+      />
+      <!-- [textMask]="{mask: maskPhone}" -->
+      <mat-icon matSuffix class="text-gray-500">call</mat-icon>
     </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Ваша почта</mat-label>
+      <input
+        matInput
+        type="email"
+        placeholder="Адрес почты"
+        formControlName="email"
+        name="email"
+      />
+      <mat-icon matSuffix class="text-gray-500">mail</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Выберите дату</mat-label>
+      <input
+        matInput
+        [min]="minDate"
+        [matDatepicker]="picker"
+        formControlName="date"
+        name="date"
+      />
+      <mat-datepicker-toggle
+        matIconSuffix
+        [for]="picker"
+      ></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Выберите время</mat-label>
+      <mat-select formControlName="time" name="time">
+        <mat-option value="time" *ngFor="let time of arrTimes">{{
+          time
+        }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
     <button type="submit" disabled="{{ buttonDisabled }}" mat-raised-button>
-      записаться на прием
+      <mat-icon class="text-gray-500">person_add</mat-icon>
+      {{ buttonText | uppercase }}
     </button>
   </form>
 </div>
