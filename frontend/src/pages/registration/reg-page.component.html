@@ -16,17 +16,17 @@
         placeholder="Имя и Фамилия"
         formControlName="name"
         name="name"
+        maxLength="40"
         [errorStateMatcher]="matcher"
       />
 
       <mat-icon matSuffix class="text-gray-500">badge</mat-icon>
-      <!-- @if (patientForm.value.name.hasError('required')) {
-      <mat-error>Email is <strong>required</strong></mat-error>
-      } -->
-
-      <!-- <mat-error *ngIf="patientForm.value.name"
-        >Пожалуйста введите имя и фамилию!</mat-error
-      > -->
+      <mat-error *ngIf="patientForm.get('name')?.hasError('required')">
+        Пожалуйста введите имя и фамилию!
+      </mat-error>
+      <mat-error *ngIf="patientForm.get('name')?.hasError('pattern')">
+        Имя и фамилия указываются только буквами!
+      </mat-error>
     </mat-form-field>
 
     <mat-form-field>
@@ -35,24 +35,33 @@
       <input
         type="text"
         matInput
-        placeholder="777-77777"
         formControlName="phone"
         name="phone"
+        [showMaskTyped]="true"
+        mask="(000)-00-000"
+        [errorStateMatcher]="matcher"
       />
-      <!-- [textMask]="{mask: maskPhone}" -->
+
       <mat-icon matSuffix class="text-gray-500">call</mat-icon>
+      <mat-error *ngIf="patientForm.get('phone')?.hasError('required')">
+        Пожалуйста введите телефон!
+      </mat-error>
     </mat-form-field>
 
     <mat-form-field>
-      <mat-label>Ваша почта</mat-label>
+      <mat-label>Ваша почта (не обязательно)</mat-label>
       <input
         matInput
         type="email"
         placeholder="Адрес почты"
         formControlName="email"
         name="email"
+        [errorStateMatcher]="matcher"
       />
       <mat-icon matSuffix class="text-gray-500">mail</mat-icon>
+      <mat-error *ngIf="patientForm.get('email')?.hasError('email')">
+        Пожалуйста введите существующий адрес!
+      </mat-error>
     </mat-form-field>
 
     <mat-form-field>
@@ -63,24 +72,38 @@
         [matDatepicker]="picker"
         formControlName="date"
         name="date"
+        readonly
+        (click)="picker.open()"
+        [errorStateMatcher]="matcher"
       />
       <mat-datepicker-toggle
         matIconSuffix
         [for]="picker"
       ></mat-datepicker-toggle>
       <mat-datepicker #picker></mat-datepicker>
+      <mat-error *ngIf="patientForm.get('date')?.hasError('required')">
+        Пожалуйста выберите дату!
+      </mat-error>
     </mat-form-field>
 
     <mat-form-field>
       <mat-label>Выберите время</mat-label>
-      <mat-select formControlName="time" name="time">
+      <mat-select
+        formControlName="time"
+        name="time"
+        panelClass="grid grid-cols-4 grid-rows-4"
+        [errorStateMatcher]="matcher"
+      >
         <mat-option value="time" *ngFor="let time of arrTimes">{{
           time
         }}</mat-option>
       </mat-select>
+      <mat-error *ngIf="patientForm.get('time')?.hasError('required')">
+        Пожалуйста выберите время!
+      </mat-error>
     </mat-form-field>
 
-    <button type="submit" disabled="{{ buttonDisabled }}" mat-raised-button>
+    <button type="submit" [disabled]="!patientForm.valid" mat-raised-button>
       <mat-icon class="text-gray-500">person_add</mat-icon>
       {{ buttonText | uppercase }}
     </button>

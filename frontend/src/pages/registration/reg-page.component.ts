@@ -22,7 +22,7 @@ import 'moment/locale/ru';
 
 const moment = _rollupMoment || _moment;
 
-let lang = moment.locale('ru');
+const lang = moment.locale('ru');
 
 const MY_FORMATS = {
   parse: {
@@ -37,7 +37,7 @@ const MY_FORMATS = {
 };
 
 /** Error when invalid control is dirty, touched, or submitted. */
-export class MyErrorStateMatcher implements ErrorStateMatcher {
+class MyErrorStateMatcher implements ErrorStateMatcher {
   isErrorState(
     control: FormControl | null,
     form: FormGroupDirective | NgForm | null
@@ -60,7 +60,6 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
   ],
 })
 export class RegPageComponent implements OnInit {
-  buttonDisabled = false;
   buttonText = 'записаться на прием';
   arrTimes: string[] = [
     '09-00',
@@ -82,28 +81,28 @@ export class RegPageComponent implements OnInit {
   ];
 
   minDate = new Date();
-  maskPhone = /\+373\d\d\d-\d\d-\d\d\d/i;
-
+  matcher = new MyErrorStateMatcher();
   constructor(
-    private builder: FormBuilder,
+    private formBuilder: FormBuilder,
     private dateAdapter: DateAdapter<Date>
   ) {}
   ngOnInit() {
     this.dateAdapter.setLocale('ru-RU');
   }
 
-  patientForm = this.builder.group({
-    name: new FormControl('', Validators.required),
+  patientForm = this.formBuilder.group({
+    name: new FormControl('', [
+      Validators.required,
+      Validators.pattern(/^[a-zA-Zа-яА-Я\s]*$/),
+    ]),
     phone: new FormControl('', Validators.required),
     email: new FormControl('', Validators.email),
-    date: new FormControl(this.minDate, Validators.required),
+    date: new FormControl('', Validators.required),
     time: new FormControl('', Validators.required),
   });
 
-  matcher = new MyErrorStateMatcher();
-
   onFormSubmit() {
-    console.log(this.patientForm.value);
+    console.log(this.patientForm);
     // this.patientForm.reset();
   }
 }

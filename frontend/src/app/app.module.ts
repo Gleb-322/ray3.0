@@ -3,6 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 
 import { MaterialModule } from './material.module';
+import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
 
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
@@ -31,8 +32,10 @@ import { NotFoundPageComponent } from '../pages/not-found-page/not-found-page.co
     FormsModule,
     ReactiveFormsModule,
     MaterialModule,
+    NgxMaskDirective,
+    NgxMaskPipe,
   ],
-  providers: [provideAnimationsAsync()],
+  providers: [provideAnimationsAsync(), provideNgxMask()],
   bootstrap: [AppComponent],
 })
 export class AppModule {}
