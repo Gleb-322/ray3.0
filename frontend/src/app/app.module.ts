@@ -3,6 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 
 import { MaterialModule } from './material.module';
+import { provideMomentDateAdapter } from '@angular/material-moment-adapter';
 import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
 
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -16,6 +17,7 @@ import { SideBarComponent } from '../components/side-bar/side-bar.component';
 import { PreviewPageComponent } from '../pages/preview/preview-page.component';
 import { RegPageComponent } from '../pages/registration/reg-page.component';
 import { NotFoundPageComponent } from '../pages/not-found-page/not-found-page.component';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -34,8 +36,13 @@ import { NotFoundPageComponent } from '../pages/not-found-page/not-found-page.co
     MaterialModule,
     NgxMaskDirective,
     NgxMaskPipe,
+    HttpClientModule,
   ],
-  providers: [provideAnimationsAsync(), provideNgxMask()],
+  providers: [
+    provideAnimationsAsync(),
+    provideNgxMask(),
+    provideMomentDateAdapter(),
+  ],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

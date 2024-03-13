@@ -75,6 +75,7 @@
         readonly
         (click)="picker.open()"
         [errorStateMatcher]="matcher"
+        (dateChange)="onChangeDate($event)"
       />
       <mat-datepicker-toggle
         matIconSuffix
@@ -86,12 +87,12 @@
       </mat-error>
     </mat-form-field>
 
-    <mat-form-field>
+    <mat-form-field *ngIf="timeStatus">
       <mat-label>Выберите время</mat-label>
       <mat-select
         formControlName="time"
         name="time"
-        panelClass="grid grid-cols-4 grid-rows-4"
+        panelClass="grid grid-cols-4 grid-rows-4 justify-items-center"
         [errorStateMatcher]="matcher"
       >
         <mat-option value="time" *ngFor="let time of arrTimes">{{
@@ -102,7 +103,6 @@
         Пожалуйста выберите время!
       </mat-error>
     </mat-form-field>
-
     <button type="submit" [disabled]="!patientForm.valid" mat-raised-button>
       <mat-icon class="text-gray-500">person_add</mat-icon>
       {{ buttonText | uppercase }}

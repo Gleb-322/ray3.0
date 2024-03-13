@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import {
-  FormControl,
-  FormGroupDirective,
-  NgForm,
-  FormBuilder,
-  Validators,
-} from '@angular/forms';
+import { FormControl, FormBuilder, Validators } from '@angular/forms';
 
-import { ErrorStateMatcher } from '@angular/material/core';
+import { MatDatepickerInputEvent } from '@angular/material/datepicker';
+import { provideNativeDateAdapter } from '@angular/material/core';
+import { provideMomentDateAdapter } from '@angular/material-moment-adapter';
+
+import { MyErrorStateMatcher } from '../../app/material.module';
+
+import { Moment } from 'moment';
 
 import {
   DateAdapter,
@@ -19,6 +19,8 @@ import * as _moment from 'moment';
 // tslint:disable-next-line:no-duplicate-imports
 import { default as _rollupMoment } from 'moment';
 import 'moment/locale/ru';
+import { PatientsService } from '../../services/patients.service';
+import { IDate, IPatients } from '../../types/types';
 
 const moment = _rollupMoment || _moment;
 
@@ -36,21 +38,6 @@ const MY_FORMATS = {
   },
 };
 
-/** Error when invalid control is dirty, touched, or submitted. */
-class MyErrorStateMatcher implements ErrorStateMatcher {
-  isErrorState(
-    control: FormControl | null,
-    form: FormGroupDirective | NgForm | null
-  ): boolean {
-    const isSubmitted = form && form.submitted;
-    return !!(
-      control &&
-      control.invalid &&
-      (control.dirty || control.touched || isSubmitted)
-    );
-  }
-}
-
 @Component({
   selector: 'app-form-page',
   templateUrl: './reg-page.component.html',
@@ -61,30 +48,14 @@ class MyErrorStateMatcher implements ErrorStateMatcher {
 })
 export class RegPageComponent implements OnInit {
   buttonText = 'записаться на прием';
-  arrTimes: string[] = [
-    '09-00',
-    '09-30',
-    '10-00',
-    '10-30',
-    '11-00',
-    '11-30',
-    '12-00',
-    '12-30',
-    '13-00',
-    '13-30',
-    '14-00',
-    '14-30',
-    '15-00',
-    '15-30',
-    '16-00',
-    '16-30',
-  ];
-
+  timeStatus = false;
+  arrTimes: IDate[] = [];
   minDate = new Date();
   matcher = new MyErrorStateMatcher();
   constructor(
     private formBuilder: FormBuilder,
-    private dateAdapter: DateAdapter<Date>
+    private dateAdapter: DateAdapter<Date>,
+    private patientsService: PatientsService
   ) {}
   ngOnInit() {
     this.dateAdapter.setLocale('ru-RU');
@@ -101,8 +72,24 @@ export class RegPageComponent implements OnInit {
     time: new FormControl('', Validators.required),
   });
 
+  onChangeDate(event: MatDatepickerInputEvent<Moment>) {
+    const date = event.value?.format().split('T')[0];
+    const cisDateFormat = date?.split('-').reverse().join('-');
+    if (cisDateFormat) {
+      const data = {
+        date: cisDateFormat,
+      };
+      this.patientsService.postTimeByDate(data).subscribe((result) => {
+        if (result.length > 0) {
+          this.arrTimes = result;
+          this.timeStatus = true;
+        }
+      });
+    }
+  }
+
   onFormSubmit() {
-    console.log(this.patientForm);
-    // this.patientForm.reset();
+    console.log(this.patientForm.value);
+    // this.patients.postPatients(this.patientForm.value).subscribe(() => {});
   }
 }

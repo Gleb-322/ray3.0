@@ -16,7 +16,7 @@ const patientsShema = new mongoose.Schema({
 		default: '',
 	},
 	date: {
-		type: Date,
+		type: String,
 		required: true,
 	},
 	time: {
@@ -24,6 +24,7 @@ const patientsShema = new mongoose.Schema({
 		required: true,
 		trim: true,
 	},
+	// freeTime: [String],
 })
 
 const Patients = new mongoose.model('Patients', patientsShema)
