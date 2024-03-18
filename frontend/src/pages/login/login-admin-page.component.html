@@ -1,0 +1,55 @@
+<div class="bg-slate-200 w-screen h-screen flex justify-center items-center">
+  <mat-card class="w-[400px] h-[375px] p-3 flex flex-col items-center">
+    <mat-card-header>
+      <h2>Админ панель</h2>
+    </mat-card-header>
+    <mat-card-content>
+      <form
+        class="flex flex-col"
+        [formGroup]="adminForm"
+        (ngSubmit)="onFormSubmit()"
+      >
+        <mat-form-field appearance="outline">
+          <mat-label>Логин</mat-label>
+          <input
+            type="text"
+            matInput
+            placeholder="Введите логин"
+            name="login"
+            formControlName="login"
+          />
+          <mat-icon matSuffix>login</mat-icon>
+          <!-- error -->
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Пароль</mat-label>
+          <input
+            matInput
+            [type]="hide ? 'password' : 'text'"
+            placeholder="Введите пароль"
+            name="password"
+            formControlName="password"
+          />
+          <button
+            type="button"
+            mat-icon-button
+            matSuffix
+            (click)="hide = !hide"
+            [attr.aria-label]="'Hide password'"
+            [attr.aria-pressed]="hide"
+          >
+            <mat-icon>{{ hide ? "visibility_off" : "visibility" }}</mat-icon>
+          </button>
+          <!-- error -->
+        </mat-form-field>
+
+        <div>
+          <button type="submit" mat-stroked-button>
+            {{ buttonText | uppercase }}
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

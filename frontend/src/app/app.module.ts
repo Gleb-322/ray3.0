@@ -11,12 +11,13 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 import { AppComponent } from './app.component';
-import { DescriptionComponent } from '../components/description/description.component';
-import { SideBarComponent } from '../components/side-bar/side-bar.component';
+import { DescriptionComponent } from './components/description/description.component';
+import { LayoutComponent } from './components/layout/layout.component';
 
 import { PreviewPageComponent } from '../pages/preview/preview-page.component';
 import { RegPageComponent } from '../pages/registration/reg-page.component';
 import { NotFoundPageComponent } from '../pages/not-found-page/not-found-page.component';
+import { LoginPageComponent } from '../pages/login/login-admin-page.component';
 import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
@@ -25,8 +26,9 @@ import { HttpClientModule } from '@angular/common/http';
     PreviewPageComponent,
     RegPageComponent,
     DescriptionComponent,
-    SideBarComponent,
     NotFoundPageComponent,
+    LoginPageComponent,
+    LayoutComponent,
   ],
   imports: [
     BrowserModule,

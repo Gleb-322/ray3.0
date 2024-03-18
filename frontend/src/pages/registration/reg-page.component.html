@@ -95,7 +95,7 @@
         panelClass="grid grid-cols-4 grid-rows-4 justify-items-center"
         [errorStateMatcher]="matcher"
       >
-        <mat-option value="time" *ngFor="let time of arrTimes">{{
+        <mat-option [value]="time" *ngFor="let time of arrTimes">{{
           time
         }}</mat-option>
       </mat-select>

@@ -8,6 +8,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSelectModule } from '@angular/material/select';
+import { MatCardModule } from '@angular/material/card';
 import { MatMomentDateModule } from '@angular/material-moment-adapter';
 import { FormControl, FormGroupDirective, NgForm } from '@angular/forms';
 
@@ -40,6 +41,7 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
     MatFormFieldModule,
     MatDividerModule,
     MatMomentDateModule,
+    MatCardModule,
   ],
 })
 export class MaterialModule {}

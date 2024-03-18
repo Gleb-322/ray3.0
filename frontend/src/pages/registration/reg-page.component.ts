@@ -1,9 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormBuilder, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 
 import { MatDatepickerInputEvent } from '@angular/material/datepicker';
-import { provideNativeDateAdapter } from '@angular/material/core';
-import { provideMomentDateAdapter } from '@angular/material-moment-adapter';
 
 import { MyErrorStateMatcher } from '../../app/material.module';
 
@@ -50,12 +49,14 @@ export class RegPageComponent implements OnInit {
   buttonText = 'записаться на прием';
   timeStatus = false;
   arrTimes: IDate[] = [];
+  cisDateFormat: string | undefined = '';
   minDate = new Date();
   matcher = new MyErrorStateMatcher();
   constructor(
     private formBuilder: FormBuilder,
     private dateAdapter: DateAdapter<Date>,
-    private patientsService: PatientsService
+    private patientsService: PatientsService,
+    private router: Router
   ) {}
   ngOnInit() {
     this.dateAdapter.setLocale('ru-RU');
@@ -74,14 +75,14 @@ export class RegPageComponent implements OnInit {
 
   onChangeDate(event: MatDatepickerInputEvent<Moment>) {
     const date = event.value?.format().split('T')[0];
-    const cisDateFormat = date?.split('-').reverse().join('-');
-    if (cisDateFormat) {
-      const data = {
-        date: cisDateFormat,
+    this.cisDateFormat = date?.split('-').reverse().join('-');
+    if (this.cisDateFormat) {
+      const bodyObject = {
+        date: this.cisDateFormat,
       };
-      this.patientsService.postTimeByDate(data).subscribe((result) => {
-        if (result.length > 0) {
-          this.arrTimes = result;
+      this.patientsService.postTimeByDate(bodyObject).subscribe((result) => {
+        if (result.body.length > 0) {
+          this.arrTimes = result.body;
           this.timeStatus = true;
         }
       });
@@ -89,7 +90,18 @@ export class RegPageComponent implements OnInit {
   }
 
   onFormSubmit() {
-    console.log(this.patientForm.value);
-    // this.patients.postPatients(this.patientForm.value).subscribe(() => {});
+    const bodyObject = {
+      name: this.patientForm.value?.name,
+      phone: this.patientForm.value?.phone,
+      email: this.patientForm.value?.email,
+      date: this.cisDateFormat,
+      time: this.patientForm.value?.time,
+    };
+    if (bodyObject) {
+      this.patientsService.postPatients(bodyObject).subscribe((result) => {
+        console.log(result.body);
+        this.router.navigate(['/preview']);
+      });
+    }
   }
 }

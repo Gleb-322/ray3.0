@@ -18,19 +18,27 @@ const loginAdmin = async (req, res) => {
 		})
 
 		if (!admin) {
-			throw new Error('Unable to login!')
+			throw new Error('Неверный логин!')
 		}
 
 		const isMatch = await bcrypt.compare(req.body.password, admin.password)
 
 		if (!isMatch) {
-			throw new Error('Unable to login!')
+			throw new Error('Неверный пароль!')
 		}
 
 		const token = await admin.generateAuthToken()
-		res.send({ admin, token })
+		res.send({
+			body: { admin, token },
+			success: true,
+			errorCode: 0,
+		})
 	} catch (e) {
-		res.status(400).send({ error: e.message })
+		res.status(200).send({
+			body: e.message,
+			success: false,
+			errorCode: 1,
+		})
 	}
 }
 

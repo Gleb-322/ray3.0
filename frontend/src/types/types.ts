@@ -2,9 +2,13 @@ export interface IDate {
   date: string;
 }
 export interface IPatients {
-  name: string | null;
-  phone: string | null;
-  email?: string | null;
-  date: string | null;
-  time: string | null;
+  name: string | null | undefined;
+  phone: string | null | undefined;
+  email?: string | null | undefined;
+  date: string | undefined;
+  time: string | null | undefined;
+}
+export interface IAdmin {
+  login: string | null | undefined;
+  password: string | null | undefined;
 }

@@ -1,6 +1,6 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, catchError, throwError } from 'rxjs';
 import { IDate, IPatients } from '../types/types';
 
 @Injectable({
@@ -9,11 +9,23 @@ import { IDate, IPatients } from '../types/types';
 export class PatientsService {
   constructor(private http: HttpClient) {}
 
-  postTimeByDate(body: IDate): Observable<IDate[]> {
-    return this.http.post<IDate[]>('http://localhost:3000/patients/time', body);
+  postTimeByDate(
+    body: IDate
+  ): Observable<{ body: IDate[]; success: boolean; errorCode: number }> {
+    return this.http.post<{
+      body: IDate[];
+      success: boolean;
+      errorCode: number;
+    }>('http://localhost:3000/patients/time', body);
   }
 
-  postPatients(body: IPatients): Observable<IPatients> {
-    return this.http.post<IPatients>('localhost:3000/patients', body);
+  postPatients(
+    body: IPatients
+  ): Observable<{ body: IPatients; success: boolean; errorCode: number }> {
+    return this.http.post<{
+      body: IPatients;
+      success: boolean;
+      errorCode: number;
+    }>('http://localhost:3000/patients', body);
   }
 }
