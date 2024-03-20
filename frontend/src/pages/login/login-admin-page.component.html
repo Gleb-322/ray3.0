@@ -1,11 +1,11 @@
 <div class="bg-slate-200 w-screen h-screen flex justify-center items-center">
-  <mat-card class="w-[400px] h-[375px] p-3 flex flex-col items-center">
+  <mat-card class="w-[400px] h-[375px] p-[30px] flex flex-col items-center">
     <mat-card-header>
       <h2>Админ панель</h2>
     </mat-card-header>
-    <mat-card-content>
+    <mat-card-content class="w-full h-full">
       <form
-        class="flex flex-col"
+        class="w-full h-full flex flex-col justify-between"
         [formGroup]="adminForm"
         (ngSubmit)="onFormSubmit()"
       >
@@ -19,7 +19,9 @@
             formControlName="login"
           />
           <mat-icon matSuffix>login</mat-icon>
-          <!-- error -->
+          <mat-error *ngIf="adminForm.get('login')?.hasError('required')">
+            Пожалуйста введите логин!
+          </mat-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline">
@@ -41,11 +43,22 @@
           >
             <mat-icon>{{ hide ? "visibility_off" : "visibility" }}</mat-icon>
           </button>
-          <!-- error -->
+          <mat-error *ngIf="adminForm.get('password')?.hasError('required')">
+            Пожалуйста введите пароль!
+          </mat-error>
         </mat-form-field>
 
+        <div *ngIf="errorMessageStatus" class="text-red-500">
+          {{ errorMessage }}
+        </div>
+
         <div>
-          <button type="submit" mat-stroked-button>
+          <button
+            type="submit"
+            [disabled]="!adminForm.valid"
+            mat-stroked-button
+          >
+            <mat-icon>input</mat-icon>
             {{ buttonText | uppercase }}
           </button>
         </div>

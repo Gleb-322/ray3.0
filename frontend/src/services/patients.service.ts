@@ -9,21 +9,29 @@ import { IDate, IPatients } from '../types/types';
 export class PatientsService {
   constructor(private http: HttpClient) {}
 
-  postTimeByDate(
-    body: IDate
-  ): Observable<{ body: IDate[]; success: boolean; errorCode: number }> {
+  postTimeByDate(body: IDate): Observable<{
+    body: IDate[];
+    errorMessage: string | null;
+    success: boolean;
+    errorCode: number;
+  }> {
     return this.http.post<{
       body: IDate[];
+      errorMessage: string | null;
       success: boolean;
       errorCode: number;
     }>('http://localhost:3000/patients/time', body);
   }
 
-  postPatients(
-    body: IPatients
-  ): Observable<{ body: IPatients; success: boolean; errorCode: number }> {
+  postPatients(body: IPatients): Observable<{
+    body: IPatients;
+    errorMessage: string | null;
+    success: boolean;
+    errorCode: number;
+  }> {
     return this.http.post<{
       body: IPatients;
+      errorMessage: string | null;
       success: boolean;
       errorCode: number;
     }>('http://localhost:3000/patients', body);

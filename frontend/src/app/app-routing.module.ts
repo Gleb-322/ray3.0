@@ -5,16 +5,37 @@ import { RegPageComponent } from '../pages/registration/reg-page.component';
 import { NotFoundPageComponent } from '../pages/not-found-page/not-found-page.component';
 import { LoginPageComponent } from '../pages/login/login-admin-page.component';
 import { LayoutComponent } from './components/layout/layout.component';
+import { AdminDashboardPageComponent } from '../pages/admin-dashboard/admin-dashboard-page.component';
+import { AnalyticsPageComponent } from '../pages/analytics-page/analytics-page.component';
+import { PatientsPageComponent } from '../pages/patients-page/patients-page.component';
+import { authGuard } from '../services/auth.guard';
 
 const routes: Routes = [
   { path: 'login', component: LoginPageComponent },
   { path: '', redirectTo: 'preview', pathMatch: 'full' },
+  { path: 'admin', redirectTo: 'admin/patients', pathMatch: 'full' },
   {
     path: '',
     component: LayoutComponent,
     children: [
       { path: 'preview', component: PreviewPageComponent },
       { path: 'registration', component: RegPageComponent },
+    ],
+  },
+  {
+    path: 'admin',
+    component: AdminDashboardPageComponent,
+    children: [
+      {
+        path: 'patients',
+        component: PatientsPageComponent,
+        canActivate: [authGuard],
+      },
+      {
+        path: 'analytics',
+        component: AnalyticsPageComponent,
+        canActivate: [authGuard],
+      },
     ],
   },
   { path: '**', component: NotFoundPageComponent },

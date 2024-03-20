@@ -19,7 +19,7 @@ import * as _moment from 'moment';
 import { default as _rollupMoment } from 'moment';
 import 'moment/locale/ru';
 import { PatientsService } from '../../services/patients.service';
-import { IDate, IPatients } from '../../types/types';
+import { IDate } from '../../types/types';
 
 const moment = _rollupMoment || _moment;
 

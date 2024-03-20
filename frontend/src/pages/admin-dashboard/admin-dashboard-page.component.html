@@ -1,0 +1,28 @@
+<mat-drawer-container class="w-screen h-screen bg-slate-50">
+  <mat-drawer mode="side" opened>
+    <mat-toolbar color="primary">
+      <span>Админ панель</span>
+    </mat-toolbar>
+    <mat-nav-list>
+      <mat-divider></mat-divider>
+
+      <a routerLink="/admin/patients" routerLinkActive="text-red-500">
+        <mat-icon>group</mat-icon>
+        <div>Пациенты</div>
+      </a>
+
+      <mat-divider></mat-divider>
+
+      <a routerLink="/admin/analytics" routerLinkActive="text-red-500">
+        <mat-icon>signal_cellular_alt</mat-icon>
+        <div>Аналитика</div>
+      </a>
+
+      <mat-divider></mat-divider>
+    </mat-nav-list>
+    <button (click)="logoutAdmin()" mat-raised-button>выйти</button>
+  </mat-drawer>
+  <mat-drawer-content>
+    <router-outlet></router-outlet>
+  </mat-drawer-content>
+</mat-drawer-container>

@@ -9,7 +9,11 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatMomentDateModule } from '@angular/material-moment-adapter';
+import { MatListModule } from '@angular/material/list';
+import { MatTableModule } from '@angular/material/table';
 import { FormControl, FormGroupDirective, NgForm } from '@angular/forms';
 
 import { ErrorStateMatcher } from '@angular/material/core';
@@ -42,6 +46,10 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
     MatDividerModule,
     MatMomentDateModule,
     MatCardModule,
+    MatToolbarModule,
+    MatSidenavModule,
+    MatListModule,
+    MatTableModule,
   ],
 })
 export class MaterialModule {}

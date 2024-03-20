@@ -5,9 +5,20 @@ const bcrypt = require('bcryptjs')
 const getPatients = async (req, res) => {
 	try {
 		const patients = await Patients.find({})
-		res.send(patients)
+
+		res.send({
+			body: patients,
+			errorMessage: null,
+			success: true,
+			errorCode: 0,
+		})
 	} catch (e) {
-		res.status(500).send(e)
+		res.status(200).send({
+			body: null,
+			errorMessage: e.message,
+			success: false,
+			errorCode: 1,
+		})
 	}
 }
 
@@ -29,13 +40,17 @@ const loginAdmin = async (req, res) => {
 
 		const token = await admin.generateAuthToken()
 		res.send({
-			body: { admin, token },
+			body: admin,
+			token,
+			errorMessage: null,
 			success: true,
 			errorCode: 0,
 		})
 	} catch (e) {
 		res.status(200).send({
-			body: e.message,
+			body: null,
+			token: null,
+			errorMessage: e.message,
 			success: false,
 			errorCode: 1,
 		})

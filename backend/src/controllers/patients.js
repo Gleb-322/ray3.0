@@ -6,12 +6,14 @@ const createPatient = async (req, res) => {
 		await patient.save()
 		res.status(201).send({
 			body: patient,
+			errorMessage: null,
 			success: true,
 			errorCode: 0,
 		})
 	} catch (e) {
 		res.status(200).send({
-			body: e.message,
+			body: null,
+			errorMessage: e.message,
 			success: false,
 			errorCode: 1,
 		})
@@ -42,6 +44,7 @@ const getTimeByDate = async (req, res) => {
 		if (!dates) {
 			return res.send({
 				body: timeArr,
+				errorMessage: null,
 				success: true,
 				errorCode: 0,
 			})
@@ -50,6 +53,7 @@ const getTimeByDate = async (req, res) => {
 		if (timesPatients.lenght === 16) {
 			return res.send({
 				body: [],
+				errorMessage: null,
 				success: true,
 				errorCode: 0,
 			})
@@ -57,12 +61,14 @@ const getTimeByDate = async (req, res) => {
 		const timeByDates = timeArr.filter(t => !timesPatients.includes(t))
 		res.send({
 			body: timeByDates,
+			errorMessage: null,
 			success: true,
 			errorCode: 0,
 		})
 	} catch (e) {
 		res.status(200).send({
-			body: e.message,
+			body: null,
+			errorMessage: e.message,
 			success: false,
 			errorCode: 1,
 		})

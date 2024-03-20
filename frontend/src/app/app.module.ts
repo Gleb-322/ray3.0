@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
+import { HttpClientModule } from '@angular/common/http';
 
 import { MaterialModule } from './material.module';
 import { provideMomentDateAdapter } from '@angular/material-moment-adapter';
@@ -18,7 +19,9 @@ import { PreviewPageComponent } from '../pages/preview/preview-page.component';
 import { RegPageComponent } from '../pages/registration/reg-page.component';
 import { NotFoundPageComponent } from '../pages/not-found-page/not-found-page.component';
 import { LoginPageComponent } from '../pages/login/login-admin-page.component';
-import { HttpClientModule } from '@angular/common/http';
+import { AdminDashboardPageComponent } from '../pages/admin-dashboard/admin-dashboard-page.component';
+import { AnalyticsPageComponent } from '../pages/analytics-page/analytics-page.component';
+import { PatientsPageComponent } from '../pages/patients-page/patients-page.component';
 
 @NgModule({
   declarations: [
@@ -29,6 +32,9 @@ import { HttpClientModule } from '@angular/common/http';
     NotFoundPageComponent,
     LoginPageComponent,
     LayoutComponent,
+    AdminDashboardPageComponent,
+    AnalyticsPageComponent,
+    PatientsPageComponent,
   ],
   imports: [
     BrowserModule,
