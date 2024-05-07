@@ -1,12 +1,16 @@
-<!-- <div
-  class="drop-shadow-md rounded-lg bg-slate-50 w-full h-full box-border p-20"
-> </div>-->
-<div class="w-[600px] h-[800px] bg-slate-50 p-4">
+<section
+  class="bg-main-bg bg-no-repeat bg-center bg-cover w-screen h-screen flex justify-center pt-20"
+>
   <form
-    class="flex flex-col space-y-4"
+    class="flex flex-col space-y-4 w-[600px] h-[600px] bg-slate-50 p-4 rounded-sm"
     [formGroup]="patientForm"
     (ngSubmit)="onFormSubmit()"
   >
+    <div class="flex">
+      <button class="bg-red-600">назад</button>
+      <legend class="text-xl font-bold">Заполните форму для записи</legend>
+    </div>
+    <mat-divider></mat-divider>
     <mat-form-field>
       <mat-label>Ваше имя и фамилия</mat-label>
 
@@ -76,6 +80,7 @@
         (click)="picker.open()"
         [errorStateMatcher]="matcher"
         (dateChange)="onChangeDate($event)"
+        [matDatepickerFilter]="sundayAndDisabledDatesFilter"
       />
       <mat-datepicker-toggle
         matIconSuffix
@@ -103,9 +108,18 @@
         Пожалуйста выберите время!
       </mat-error>
     </mat-form-field>
+
+    <mat-checkbox formControlName="policy" color="primary">
+      Я согласен(а) с
+      <a routerLink="/policy"><strong>политикой конфиденциальности</strong></a>
+    </mat-checkbox>
+    <mat-error *ngIf="patientForm.get('policy')?.hasError('required')">
+      Вы не согласились!
+    </mat-error>
+
     <button type="submit" [disabled]="!patientForm.valid" mat-raised-button>
       <mat-icon class="text-gray-500">person_add</mat-icon>
       {{ buttonText | uppercase }}
     </button>
   </form>
-</div>
+</section>

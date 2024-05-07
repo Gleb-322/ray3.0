@@ -14,9 +14,29 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatMomentDateModule } from '@angular/material-moment-adapter';
 import { MatListModule } from '@angular/material/list';
 import { MatTableModule } from '@angular/material/table';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
+import { MatSortModule } from '@angular/material/sort';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { FormControl, FormGroupDirective, NgForm } from '@angular/forms';
 
 import { ErrorStateMatcher } from '@angular/material/core';
+
+export const MY_FORMATS = {
+  parse: {
+    dateInput: 'LL',
+  },
+  display: {
+    dateInput: 'DD-MM-YYYY',
+    monthYearLabel: 'YYYY',
+    dateA11yLabel: 'LL',
+    monthYearA11yLabel: 'YYYY',
+  },
+};
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class MyErrorStateMatcher implements ErrorStateMatcher {
@@ -50,6 +70,17 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
     MatSidenavModule,
     MatListModule,
     MatTableModule,
+    MatPaginatorModule,
+    MatDialogModule,
+    MatSortModule,
+    MatSnackBarModule,
+  ],
+  providers: [
+    {
+      provide: MatDialogRef,
+      useValue: {},
+    },
+    { provide: MAT_DIALOG_DATA, useValue: {} },
   ],
 })
 export class MaterialModule {}

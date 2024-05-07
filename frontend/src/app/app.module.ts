@@ -14,6 +14,8 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { AppComponent } from './app.component';
 import { DescriptionComponent } from './components/description/description.component';
 import { LayoutComponent } from './components/layout/layout.component';
+import { AddComponent } from './components/add/add.component';
+import { EditComponent } from './components/edit/edit.component';
 
 import { PreviewPageComponent } from '../pages/preview/preview-page.component';
 import { RegPageComponent } from '../pages/registration/reg-page.component';
@@ -22,6 +24,7 @@ import { LoginPageComponent } from '../pages/login/login-admin-page.component';
 import { AdminDashboardPageComponent } from '../pages/admin-dashboard/admin-dashboard-page.component';
 import { AnalyticsPageComponent } from '../pages/analytics-page/analytics-page.component';
 import { PatientsPageComponent } from '../pages/patients-page/patients-page.component';
+import { PolicyPageComponent } from '../pages/policy-page/policy-page.component';
 
 @NgModule({
   declarations: [
@@ -35,6 +38,9 @@ import { PatientsPageComponent } from '../pages/patients-page/patients-page.comp
     AdminDashboardPageComponent,
     AnalyticsPageComponent,
     PatientsPageComponent,
+    PolicyPageComponent,
+    AddComponent,
+    EditComponent,
   ],
   imports: [
     BrowserModule,

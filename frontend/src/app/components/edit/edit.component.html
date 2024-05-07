@@ -1,0 +1,131 @@
+<div class="w-[650px] py-6 px-8">
+  <form [formGroup]="editForm" (ngSubmit)="onFormSubmit()">
+    <legend class="text-center text-xl font-bold pb-4">
+      Заполните форму изменения записи
+    </legend>
+    <mat-divider></mat-divider>
+
+    <div class="grid grid-cols-2 grid-rows-2 gap-3 pt-6">
+      <mat-form-field appearance="outline">
+        <mat-label>Имя и Фамилия</mat-label>
+        <input
+          matInput
+          type="text"
+          name="name"
+          maxLength="40"
+          placeholder="Имя и Фамилия"
+          formControlName="name"
+          [errorStateMatcher]="matcher"
+        />
+        <mat-icon matSuffix class="text-gray-500">badge</mat-icon>
+        <mat-error *ngIf="editForm.get('name')?.hasError('required')">
+          Введите имя и фамилию!
+        </mat-error>
+        <mat-error *ngIf="editForm.get('name')?.hasError('pattern')">
+          Только буквами!
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Телефон</mat-label>
+        <input
+          matInput
+          type="text"
+          name="phone"
+          [showMaskTyped]="true"
+          mask="(000)-00-000"
+          [errorStateMatcher]="matcher"
+          formControlName="phone"
+        />
+        <mat-icon matSuffix class="text-gray-500">call</mat-icon>
+        <mat-error *ngIf="editForm.get('phone')?.hasError('required')">
+          Введите телефон!
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Почта не обязательна</mat-label>
+        <input
+          matInput
+          type="email"
+          name="email"
+          placeholder="Адрес почты"
+          [errorStateMatcher]="matcher"
+          formControlName="email"
+        />
+        <mat-icon matSuffix class="text-gray-500">mail</mat-icon>
+        <mat-error *ngIf="editForm.get('email')?.hasError('email')">
+          Введите существующий адрес!
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Выберите дату</mat-label>
+        <input
+          matInput
+          [min]="minDate"
+          placeholder="Выберите дату"
+          [matDatepicker]="picker"
+          formControlName="date"
+          name="date"
+          readonly
+          (click)="picker.open()"
+          [errorStateMatcher]="matcher"
+          (dateChange)="onChangeDate($event)"
+          [matDatepickerFilter]="weekendsDatesFilter"
+        />
+        <mat-datepicker-toggle
+          matIconSuffix
+          [for]="picker"
+        ></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+        <mat-error *ngIf="editForm.get('date')?.hasError('required')">
+          Выберите дату!
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="pt-3 pb-3 grid grid-cols-1 grid-rows-1">
+      <mat-form-field *ngIf="timeStatus" appearance="outline">
+        <mat-label>Выберите время</mat-label>
+
+        <mat-select
+          formControlName="time"
+          name="time"
+          panelClass="grid grid-cols-4 grid-rows-4 justify-items-center"
+          [errorStateMatcher]="matcher"
+          [value]="editData.time"
+        >
+          <mat-option [value]="time" *ngFor="let time of arrEditTime">
+            {{ time }}
+          </mat-option>
+        </mat-select>
+
+        <mat-error *ngIf="editForm.get('time')?.hasError('required')">
+          Выберите время!
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <button type="submit" [disabled]="!editForm.valid" mat-raised-button>
+      <mat-icon class="text-gray-500">person_add</mat-icon>
+      {{ buttonText | uppercase }}
+    </button>
+
+    <button type="button" (click)="onCancel()" color="warn" mat-raised-button>
+      <mat-icon class="text-gray-500">close</mat-icon>
+      {{ buttonCancelText | uppercase }}
+    </button>
+  </form>
+</div>
+
+<!-- <mat-select
+  formControlName="time"
+  name="time"
+  panelClass="grid grid-cols-4 grid-rows-4 justify-items-center"
+  [errorStateMatcher]="matcher"
+>
+  <mat-option [value]="time" *ngFor="let time of times">
+    {{ time }}
+  </mat-option>
+</mat-select> -->

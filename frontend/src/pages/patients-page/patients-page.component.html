@@ -1,38 +1,119 @@
-<div>
-  <table mat-table [dataSource]="patients">
-    <ng-container matColumnDef="index">
-      <th mat-header-cell *matHeaderCellDef>No.</th>
-      <td mat-cell *matCellDef="let element">
-        {{ patients.indexOf(element) + 1 }}
-      </td>
-    </ng-container>
+<div class="w-full h-full flex flex-col justify-between">
+  <div>
+    <div>
+      <mat-form-field appearance="fill">
+        <mat-label>Фильтр пациентов</mat-label>
+        <input
+          matInput
+          type="text"
+          name="filterInput"
+          placeholder="фильтр пациентов"
+          #filterInput
+          (keyup)="onChangeFilter($event)"
+        />
+        <mat-icon matSuffix class="text-gray-500">sort</mat-icon>
+      </mat-form-field>
 
-    <ng-container matColumnDef="name">
-      <th mat-header-cell *matHeaderCellDef>Name</th>
-      <td mat-cell *matCellDef="let element">{{ element.name }}</td>
-    </ng-container>
+      <mat-form-field appearance="fill">
+        <mat-label>Интервал времени</mat-label>
+        <mat-date-range-input [rangePicker]="dateRangePicker" [min]="minDate">
+          <input
+            matStartDate
+            (click)="dateRangePicker.open()"
+            placeholder="Начало"
+            #dateRangeStart
+          />
+          <input
+            matEndDate
+            placeholder="Конец"
+            #dateRangeEnd
+            (dateChange)="dateRangeChange(dateRangeStart, dateRangeEnd)"
+            (click)="dateRangePicker.open()"
+          />
+        </mat-date-range-input>
+        <mat-datepicker-toggle
+          matSuffix
+          [for]="dateRangePicker"
+        ></mat-datepicker-toggle>
+        <mat-date-range-picker #dateRangePicker></mat-date-range-picker>
+      </mat-form-field>
+      <br />
+      <!-- <button mat-button (click)="clearSelection()">Clear</button> -->
+    </div>
 
-    <ng-container matColumnDef="phone">
-      <th mat-header-cell *matHeaderCellDef>Phone</th>
-      <td mat-cell *matCellDef="let element">{{ element.phone }}</td>
-    </ng-container>
+    <div>
+      <table mat-table [dataSource]="patients">
+        <ng-container matColumnDef="created">
+          <th mat-header-cell *matHeaderCellDef>Дата записи</th>
+          <td mat-cell *matCellDef="let patient">Дата</td>
+        </ng-container>
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Имя и Фамилия</th>
+          <td mat-cell *matCellDef="let patient">{{ patient.name }}</td>
+        </ng-container>
 
-    <ng-container matColumnDef="email">
-      <th mat-header-cell *matHeaderCellDef>Email</th>
-      <td mat-cell *matCellDef="let element">{{ element.email }}</td>
-    </ng-container>
+        <ng-container matColumnDef="phone">
+          <th mat-header-cell *matHeaderCellDef>Телефон</th>
+          <td mat-cell *matCellDef="let patient">{{ patient.phone }}</td>
+        </ng-container>
 
-    <ng-container matColumnDef="date">
-      <th mat-header-cell *matHeaderCellDef>Date</th>
-      <td mat-cell *matCellDef="let element">{{ element.date }}</td>
-    </ng-container>
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef>Почта</th>
+          <td mat-cell *matCellDef="let patient">
+            {{ patient.email ? patient.email : "Почту не указал" }}
+          </td>
+        </ng-container>
 
-    <ng-container matColumnDef="time">
-      <th mat-header-cell *matHeaderCellDef>Time</th>
-      <td mat-cell *matCellDef="let element">{{ element.time }}</td>
-    </ng-container>
+        <ng-container matColumnDef="date">
+          <th mat-header-cell *matHeaderCellDef>Дата записи</th>
+          <td mat-cell *matCellDef="let patient">{{ patient.date }}</td>
+        </ng-container>
 
-    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-  </table>
+        <ng-container matColumnDef="time">
+          <th mat-header-cell *matHeaderCellDef>Время записи</th>
+          <td mat-cell *matCellDef="let patient">{{ patient.time }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="action">
+          <th mat-header-cell *matHeaderCellDef>
+            <button mat-raised-button (click)="openAddForm()">
+              новая запись
+            </button>
+          </th>
+          <td mat-cell *matCellDef="let patient">
+            <button
+              mat-icon-button
+              color="primary"
+              (click)="openEditForm(patient)"
+            >
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              color="warn"
+              (click)="deletePatient(patient._id)"
+            >
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let patient; columns: displayedColumns"></tr>
+
+        <tr *matNoDataRow>
+          <td colspan="6">
+            По запросу "{{ filterInput.value }}" ничего не найдено...
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <mat-paginator
+    [length]="patientsLength"
+    (page)="handlePageEvent($event)"
+    showFirstLastButtons
+    [pageSize]="14"
+  ></mat-paginator>
 </div>

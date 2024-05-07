@@ -10,13 +10,13 @@ export class PatientsService {
   constructor(private http: HttpClient) {}
 
   postTimeByDate(body: IDate): Observable<{
-    body: IDate[];
+    body: string[];
     errorMessage: string | null;
     success: boolean;
     errorCode: number;
   }> {
     return this.http.post<{
-      body: IDate[];
+      body: string[];
       errorMessage: string | null;
       success: boolean;
       errorCode: number;

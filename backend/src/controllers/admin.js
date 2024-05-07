@@ -4,10 +4,13 @@ const bcrypt = require('bcryptjs')
 
 const getPatients = async (req, res) => {
 	try {
-		const patients = await Patients.find({})
+		const patients = await req.paginatedResult
+		const endIndex = await req.endIndex
+		const count = await req.count
 
 		res.send({
 			body: patients,
+			count,
 			errorMessage: null,
 			success: true,
 			errorCode: 0,
@@ -15,6 +18,7 @@ const getPatients = async (req, res) => {
 	} catch (e) {
 		res.status(200).send({
 			body: null,
+			count: null,
 			errorMessage: e.message,
 			success: false,
 			errorCode: 1,
@@ -29,13 +33,13 @@ const loginAdmin = async (req, res) => {
 		})
 
 		if (!admin) {
-			throw new Error('Неверный логин!')
+			throw new Error('Неверный логин или пароль!')
 		}
 
 		const isMatch = await bcrypt.compare(req.body.password, admin.password)
 
 		if (!isMatch) {
-			throw new Error('Неверный пароль!')
+			throw new Error('Неверный логин или пароль!')
 		}
 
 		const token = await admin.generateAuthToken()
@@ -59,13 +63,9 @@ const loginAdmin = async (req, res) => {
 
 const updatePatients = async (req, res) => {
 	try {
-		const date = await Patients.findOne({ date: req.body.date })
-		if (date) {
-			throw new Error('Date alredy exists!')
-		}
 		const patient = await Patients.findOneAndUpdate(
 			{
-				_id: req.params.id,
+				_id: req.body._id,
 			},
 			req.body,
 			{
@@ -73,12 +73,27 @@ const updatePatients = async (req, res) => {
 			}
 		)
 		if (!patient) {
-			return res.status(404).send('Patient not found')
+			return res.status(200).send({
+				body: null,
+				errorMessage: 'Такой пациент не найден!',
+				success: false,
+				errorCode: 2,
+			})
 		}
 
-		res.send(patient)
+		res.send({
+			body: patient,
+			errorMessage: null,
+			success: true,
+			errorCode: 0,
+		})
 	} catch (e) {
-		res.status(400).send({ error: e.message })
+		res.status(200).send({
+			body: null,
+			errorMessage: e.message,
+			success: false,
+			errorCode: 1,
+		})
 	}
 }
 
@@ -86,11 +101,26 @@ const deletePatients = async (req, res) => {
 	try {
 		const patient = await Patients.findOneAndDelete({ _id: req.params.id })
 		if (!patient) {
-			return res.status(404).send('Patient not found')
+			return res.status(200).send({
+				body: null,
+				errorMessage: 'Patient not found',
+				success: false,
+				errorCode: 2,
+			})
 		}
-		res.send(patient)
+		res.send({
+			body: patient,
+			errorMessage: null,
+			success: true,
+			errorCode: 0,
+		})
 	} catch (e) {
-		res.status(400).send({ error: e.message })
+		res.status(200).send({
+			body: null,
+			errorMessage: e.message,
+			success: false,
+			errorCode: 1,
+		})
 	}
 }
 

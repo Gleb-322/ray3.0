@@ -12,8 +12,8 @@ export class AdminDashboardPageComponent {
 
   logoutAdmin(): void {
     console.log('logout');
+    this.adminService.logOutAdmin();
     localStorage.removeItem('token');
-    localStorage.removeItem('loggetIn');
     this.router.navigate(['/login']);
   }
 }

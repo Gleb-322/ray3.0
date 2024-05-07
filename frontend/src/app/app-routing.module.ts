@@ -9,9 +9,11 @@ import { AdminDashboardPageComponent } from '../pages/admin-dashboard/admin-dash
 import { AnalyticsPageComponent } from '../pages/analytics-page/analytics-page.component';
 import { PatientsPageComponent } from '../pages/patients-page/patients-page.component';
 import { authGuard } from '../services/auth.guard';
+import { PolicyPageComponent } from '../pages/policy-page/policy-page.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginPageComponent },
+  { path: 'policy', component: PolicyPageComponent },
   { path: '', redirectTo: 'preview', pathMatch: 'full' },
   { path: 'admin', redirectTo: 'admin/patients', pathMatch: 'full' },
   {
