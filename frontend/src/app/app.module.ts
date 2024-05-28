@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 import { HttpClientModule } from '@angular/common/http';
+import { provideToastr } from 'ngx-toastr';
 
 import { MaterialModule } from './material.module';
 import { provideMomentDateAdapter } from '@angular/material-moment-adapter';
@@ -16,6 +17,7 @@ import { DescriptionComponent } from './components/description/description.compo
 import { LayoutComponent } from './components/layout/layout.component';
 import { AddComponent } from './components/add/add.component';
 import { EditComponent } from './components/edit/edit.component';
+import { DialogComponent } from './components/dialog/dialog.component';
 
 import { PreviewPageComponent } from '../pages/preview/preview-page.component';
 import { RegPageComponent } from '../pages/registration/reg-page.component';
@@ -41,6 +43,7 @@ import { PolicyPageComponent } from '../pages/policy-page/policy-page.component'
     PolicyPageComponent,
     AddComponent,
     EditComponent,
+    DialogComponent,
   ],
   imports: [
     BrowserModule,
@@ -56,6 +59,7 @@ import { PolicyPageComponent } from '../pages/policy-page/policy-page.component'
     provideAnimationsAsync(),
     provideNgxMask(),
     provideMomentDateAdapter(),
+    provideToastr(),
   ],
   bootstrap: [AppComponent],
 })

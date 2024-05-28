@@ -1,11 +1,13 @@
 const mongoose = require('mongoose')
 
 const disabledDatesSchema = new mongoose.Schema({
-	disabledDates: [
-		{
-			type: String,
-		},
-	],
+	disabledDate: {
+		type: String,
+	},
+	full: {
+		type: Boolean,
+		default: false,
+	},
 })
 
 const DisabledDates = new mongoose.model('DisabledDates', disabledDatesSchema)

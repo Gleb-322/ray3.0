@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import {
   FormControl,
   FormBuilder,
@@ -28,6 +28,7 @@ import { PatientsService } from '../../../services/patients.service';
 import { IPatients } from '../../../types/types';
 import { MY_FORMATS } from '../../material.module';
 import { AdminService } from '../../../services/admin.service';
+import { DisabledDatesService } from '../../../services/disabled-dates.service';
 
 const moment = _rollupMoment || _moment;
 
@@ -41,7 +42,7 @@ const lang = moment.locale('ru');
     { provide: MAT_DATE_FORMATS, useValue: MY_FORMATS },
   ],
 })
-export class EditComponent {
+export class EditComponent implements OnInit {
   editForm: FormGroup;
   buttonText = 'изменить запись';
   buttonCancelText = 'отмена';
@@ -51,14 +52,19 @@ export class EditComponent {
   cisDateFormat: string | undefined = '';
   minDate: Moment = moment(new Date());
   matcher = new MyErrorStateMatcher();
+  arrayDisabledDates: string[] = [];
   constructor(
     private _formBuilder: FormBuilder,
     private _dateAdapter: DateAdapter<Date>,
     private _patientsService: PatientsService,
     private _adminService: AdminService,
+    private _disabledDateService: DisabledDatesService,
     private _dialogRef: MatDialogRef<EditComponent>,
     @Inject(MAT_DIALOG_DATA) public editData: IPatients
   ) {
+    this.sundayAndDisabledDatesFilter =
+      this.sundayAndDisabledDatesFilter.bind(this);
+
     this.editForm = this._formBuilder.group({
       name: new FormControl('', [
         Validators.required,
@@ -73,7 +79,7 @@ export class EditComponent {
   ngOnInit() {
     this._dateAdapter.setLocale('ru-RU');
 
-    console.log(this.editData);
+    this.getDisabledDates();
 
     if (this.editData) {
       this.editForm.controls['name'].setValue(this.editData.name);
@@ -89,7 +95,9 @@ export class EditComponent {
           date: this.editData.date,
         };
         this._patientsService.postTimeByDate(bodyObject).subscribe((result) => {
-          if (result.body.length > 0) {
+          console.log('on init', result);
+
+          if (result.body) {
             this.arrEditTime = result.body;
             this.arrEditTime.push(this.editData.time!);
             this.arrEditTime.sort();
@@ -100,9 +108,27 @@ export class EditComponent {
     }
   }
 
-  weekendsDatesFilter(date: Moment | null) {
-    const day = date ? date.isoWeekday() : new Date();
-    return day !== 7;
+  // get disabled dates from api
+  getDisabledDates() {
+    this._disabledDateService.getDisabledDates().subscribe((result) => {
+      if (result.body && result.body.length > 0) {
+        this.arrayDisabledDates = result.body.map((d) => d.disabledDate);
+        if (this.arrayDisabledDates.includes(this.editData.date!)) {
+          this.arrayDisabledDates = this.arrayDisabledDates.filter(
+            (d) => d !== this.editData.date!
+          );
+        }
+        console.log('getDisabledDates', this.arrayDisabledDates);
+      } else {
+        this.arrayDisabledDates = [];
+      }
+    });
+  }
+
+  sundayAndDisabledDatesFilter(date: Moment | null) {
+    const day = date?.isoWeekday();
+    const input = moment(date).format('DD-MM-YYYY');
+    return day !== 7 && !this.arrayDisabledDates.includes(input);
   }
 
   onChangeDate(event: MatDatepickerInputEvent<Moment>) {
@@ -112,7 +138,8 @@ export class EditComponent {
         date: cisDateFormat,
       };
       this._patientsService.postTimeByDate(bodyObject).subscribe((result) => {
-        if (result.body.length > 0) {
+        console.log('onChangeDateEdit', result);
+        if (result.body) {
           if (bodyObject.date === this.editData.date) {
             this.arrEditTime = result.body;
             this.arrEditTime.push(this.editData.time!);
@@ -133,6 +160,7 @@ export class EditComponent {
         phone: this.editForm.value?.phone,
         email: this.editForm.value?.email,
         date: this.editForm.value?.date.format('DD-MM-YYYY'),
+        previousDate: this.editData.date,
         time: this.editForm.value?.time,
         _id: this.editData._id,
       };

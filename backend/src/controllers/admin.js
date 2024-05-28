@@ -1,6 +1,7 @@
 const Patients = require('../models/patient')
 const Admin = require('../models/admin')
 const bcrypt = require('bcryptjs')
+const DisabledDates = require('../models/disabledDates')
 
 const getPatients = async (req, res) => {
 	try {
@@ -63,11 +64,19 @@ const loginAdmin = async (req, res) => {
 
 const updatePatients = async (req, res) => {
 	try {
+		const updatePatientBodyOnbject = {
+			name: req.body.name,
+			phone: req.body.phone,
+			email: req.body.email,
+			date: req.body.date,
+			time: req.body.time,
+			_id: req.body._id,
+		}
 		const patient = await Patients.findOneAndUpdate(
 			{
 				_id: req.body._id,
 			},
-			req.body,
+			updatePatientBodyOnbject,
 			{
 				returnDocument: 'after',
 			}
@@ -78,6 +87,39 @@ const updatePatients = async (req, res) => {
 				errorMessage: 'Такой пациент не найден!',
 				success: false,
 				errorCode: 2,
+			})
+		}
+
+		const countOfNewDates = await Patients.find({ date: req.body.date })
+		const countOfPrevDates = await Patients.find({
+			date: req.body.previousDate,
+		})
+
+		if (countOfNewDates.length === 16) {
+			if (req.body.date !== req.body.previousDate) {
+				const newDisDate = await new DisabledDates({
+					disabledDate: req.body.date,
+					full: true,
+				})
+				await newDisDate.save()
+			}
+		} else {
+			await DisabledDates.findOneAndDelete({
+				disabledDate: req.body.date,
+			})
+		}
+
+		if (countOfPrevDates.length === 16) {
+			if (req.body.date !== req.body.previousDate) {
+				const newDisDate = await new DisabledDates({
+					disabledDate: req.body.previousDate,
+					full: true,
+				})
+				await newDisDate.save()
+			}
+		} else {
+			await DisabledDates.findOneAndDelete({
+				disabledDate: req.body.previousDate,
 			})
 		}
 
@@ -101,13 +143,24 @@ const deletePatients = async (req, res) => {
 	try {
 		const patient = await Patients.findOneAndDelete({ _id: req.params.id })
 		if (!patient) {
-			return res.status(200).send({
+			return res.send({
 				body: null,
-				errorMessage: 'Patient not found',
+				errorMessage: 'Такой пациент не найден!',
 				success: false,
 				errorCode: 2,
 			})
 		}
+
+		const patientDate = patient.date
+
+		const checkDisableDate = await DisabledDates.findOne({
+			disabledDate: patientDate,
+		})
+
+		if (checkDisableDate) {
+			await DisabledDates.findOneAndDelete({ disabledDate: patientDate })
+		}
+
 		res.send({
 			body: patient,
 			errorMessage: null,

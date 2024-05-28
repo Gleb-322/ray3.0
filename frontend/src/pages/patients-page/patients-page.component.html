@@ -16,19 +16,28 @@
 
       <mat-form-field appearance="fill">
         <mat-label>Интервал времени</mat-label>
-        <mat-date-range-input [rangePicker]="dateRangePicker" [min]="minDate">
+        <mat-date-range-input
+          [dateFilter]="sundayAndDisabledDatesFilter"
+          [rangePicker]="dateRangePicker"
+          [min]="minDate"
+        >
           <input
             matStartDate
-            (click)="dateRangePicker.open()"
             placeholder="Начало"
-            #dateRangeStart
+            [(ngModel)]="start"
+            name="start"
+            type="text"
+            (click)="dateRangePicker.open()"
+            (dateChange)="startCahnge($event)"
           />
           <input
             matEndDate
             placeholder="Конец"
-            #dateRangeEnd
-            (dateChange)="dateRangeChange(dateRangeStart, dateRangeEnd)"
+            name="end"
+            [(ngModel)]="end"
+            type="text"
             (click)="dateRangePicker.open()"
+            (dateChange)="endCahnge($event)"
           />
         </mat-date-range-input>
         <mat-datepicker-toggle
@@ -38,7 +47,22 @@
         <mat-date-range-picker #dateRangePicker></mat-date-range-picker>
       </mat-form-field>
       <br />
-      <!-- <button mat-button (click)="clearSelection()">Clear</button> -->
+      <button
+        type="button"
+        mat-raised-button
+        (click)="openDatePicker(dateRangePicker)"
+        [color]="unlockButtonStatus ? 'warn' : ''"
+      >
+        <mat-icon class="text-gray-500">check_circle</mat-icon>
+        {{
+          unlockButtonStatus ? "Разблокировка включена" : "Разблокировать даты"
+        }}
+      </button>
+      <button type="button" (click)="cleanDatePicker()" mat-raised-button>
+        <mat-icon class="text-gray-500">search_off</mat-icon>
+        Очистить поле
+      </button>
+      <button (click)="showSuccess()">toastr</button>
     </div>
 
     <div>
@@ -114,6 +138,6 @@
     [length]="patientsLength"
     (page)="handlePageEvent($event)"
     showFirstLastButtons
-    [pageSize]="14"
+    [pageSize]="12"
   ></mat-paginator>
 </div>

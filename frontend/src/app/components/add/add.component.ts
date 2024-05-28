@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import {
   FormControl,
   FormBuilder,
@@ -27,6 +27,7 @@ import 'moment/locale/ru';
 import { PatientsService } from '../../../services/patients.service';
 import { IPatients } from '../../../types/types';
 import { MY_FORMATS } from '../../material.module';
+import { DisabledDatesService } from '../../../services/disabled-dates.service';
 
 const moment = _rollupMoment || _moment;
 
@@ -40,21 +41,25 @@ const lang = moment.locale('ru');
     { provide: MAT_DATE_FORMATS, useValue: MY_FORMATS },
   ],
 })
-export class AddComponent {
+export class AddComponent implements OnInit {
   addForm: FormGroup;
   buttonText = 'сделать запись';
   buttonCancelText = 'назад';
   timeStatus = false;
   arrTimes: string[] = [];
-
+  arrayDisabledDates: string[] = [];
   minDate: Moment = moment(new Date());
   matcher = new MyErrorStateMatcher();
   constructor(
     private _formBuilder: FormBuilder,
     private _dateAdapter: DateAdapter<Date>,
     private _patientsService: PatientsService,
+    private _disabledDateService: DisabledDatesService,
     private _dialogRef: MatDialogRef<AddComponent>
   ) {
+    this.sundayAndDisabledDatesFilter =
+      this.sundayAndDisabledDatesFilter.bind(this);
+
     this.addForm = this._formBuilder.group({
       name: new FormControl('', [
         Validators.required,
@@ -68,11 +73,25 @@ export class AddComponent {
   }
   ngOnInit() {
     this._dateAdapter.setLocale('ru-RU');
+    this.getDisabledDates();
   }
 
-  weekendsDatesFilter(date: Moment | null) {
-    const day = date ? date.isoWeekday() : new Date();
-    return day !== 7;
+  // get disabled dates from api
+  getDisabledDates() {
+    this._disabledDateService.getDisabledDates().subscribe((result) => {
+      if (result.body && result.body.length > 0) {
+        this.arrayDisabledDates = result.body.map((d) => d.disabledDate);
+        console.log('getDisabledDates', this.arrayDisabledDates);
+      } else {
+        this.arrayDisabledDates = [];
+      }
+    });
+  }
+
+  sundayAndDisabledDatesFilter(date: Moment | null) {
+    const day = date?.isoWeekday();
+    const input = moment(date).format('DD-MM-YYYY');
+    return day !== 7 && !this.arrayDisabledDates.includes(input);
   }
 
   onChangeDate(event: MatDatepickerInputEvent<Moment>) {
@@ -82,7 +101,8 @@ export class AddComponent {
         date: cisDateFormat,
       };
       this._patientsService.postTimeByDate(bodyObject).subscribe((result) => {
-        if (result.body.length > 0) {
+        console.log('AddOnChange', result.body);
+        if (result.body) {
           this.arrTimes = result.body;
           this.timeStatus = true;
         }

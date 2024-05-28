@@ -1,39 +1,21 @@
 const Patients = require('../models/patient')
 const DisabledDates = require('../models/disabledDates')
 
-const getDisabledDates = async (req, res) => {
-	try {
-		const disDates = await DisabledDates.find({})
-
-		if (!disDates) {
-			return res.send({
-				body: null,
-				errorMessage: 'Не найден был массив заблокированных дат!',
-				success: false,
-				errorCode: 2,
-			})
-		}
-
-		res.send({
-			body: disDates,
-			errorMessage: null,
-			success: true,
-			errorCode: 0,
-		})
-	} catch (e) {
-		res.status(200).send({
-			body: null,
-			errorMessage: e.message,
-			success: false,
-			errorCode: 1,
-		})
-	}
-}
-
 const createPatient = async (req, res) => {
 	try {
 		const patient = new Patients(req.body)
 		await patient.save()
+
+		const dates = await Patients.find({ date: req.body.date })
+
+		if (dates.length === 16) {
+			const disDate = new DisabledDates({
+				disabledDate: req.body.date,
+				full: true,
+			})
+			await disDate.save()
+		}
+
 		res.status(201).send({
 			body: patient,
 			errorMessage: null,
@@ -80,17 +62,6 @@ const getTimeByDate = async (req, res) => {
 			})
 		}
 		const timesPatients = dates.map(el => el.time)
-		if (timesPatients.lenght === 16) {
-			const disDates = new DisabledDates(req.body.date)
-			await DisabledDates.save()
-
-			return res.send({
-				body: [],
-				errorMessage: null,
-				success: true,
-				errorCode: 0,
-			})
-		}
 
 		const timeByDates = timeArr.filter(t => !timesPatients.includes(t))
 		res.send({
@@ -112,5 +83,4 @@ const getTimeByDate = async (req, res) => {
 module.exports = {
 	createPatient,
 	getTimeByDate,
-	getDisabledDates,
 }

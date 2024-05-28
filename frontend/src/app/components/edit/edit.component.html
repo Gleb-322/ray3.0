@@ -72,7 +72,7 @@
           (click)="picker.open()"
           [errorStateMatcher]="matcher"
           (dateChange)="onChangeDate($event)"
-          [matDatepickerFilter]="weekendsDatesFilter"
+          [matDatepickerFilter]="sundayAndDisabledDatesFilter"
         />
         <mat-datepicker-toggle
           matIconSuffix
@@ -118,14 +118,3 @@
     </button>
   </form>
 </div>
-
-<!-- <mat-select
-  formControlName="time"
-  name="time"
-  panelClass="grid grid-cols-4 grid-rows-4 justify-items-center"
-  [errorStateMatcher]="matcher"
->
-  <mat-option [value]="time" *ngFor="let time of times">
-    {{ time }}
-  </mat-option>
-</mat-select> -->
