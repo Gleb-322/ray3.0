@@ -33,6 +33,8 @@
           type="text"
           name="phone"
           [showMaskTyped]="true"
+          prefix="+373"
+          [dropSpecialCharacters]="false"
           mask="(000)-00-000"
           [errorStateMatcher]="matcher"
           formControlName="phone"
@@ -40,6 +42,9 @@
         <mat-icon matSuffix class="text-gray-500">call</mat-icon>
         <mat-error *ngIf="addForm.get('phone')?.hasError('required')">
           Введите телефон!
+        </mat-error>
+        <mat-error *ngIf="addForm.get('phone')?.hasError('minlength')">
+          Введите телефон полностью!
         </mat-error>
       </mat-form-field>
 
@@ -54,7 +59,7 @@
           formControlName="email"
         />
         <mat-icon matSuffix class="text-gray-500">mail</mat-icon>
-        <mat-error *ngIf="addForm.get('email')?.hasError('email')">
+        <mat-error *ngIf="addForm.get('email')?.hasError('pattern')">
           Введите существующий адрес!
         </mat-error>
       </mat-form-field>
@@ -107,7 +112,7 @@
 
     <button type="submit" [disabled]="!addForm.valid" mat-raised-button>
       <mat-icon class="text-gray-500">person_add</mat-icon>
-      {{ buttonText | uppercase }}
+      {{ "сделать запись" | uppercase }}
     </button>
     <button
       type="button"
@@ -115,8 +120,8 @@
       color="primary"
       mat-raised-button
     >
-      <mat-icon class="text-gray-500">close</mat-icon>
-      {{ buttonCancelText | uppercase }}
+      <mat-icon class="text-stone-50">close</mat-icon>
+      {{ "назад" | uppercase }}
     </button>
   </form>
 </div>

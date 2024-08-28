@@ -1,16 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import {
   FormControl,
-  FormBuilder,
   Validators,
   FormGroup,
+  AbstractControl,
 } from '@angular/forms';
 import { Router } from '@angular/router';
 
-import {
-  DateFilterFn,
-  MatDatepickerInputEvent,
-} from '@angular/material/datepicker';
+import { MatDatepickerInputEvent } from '@angular/material/datepicker';
 
 import { MyErrorStateMatcher } from '../../app/material.module';
 
@@ -29,6 +26,10 @@ import 'moment/locale/ru';
 import { PatientsService } from '../../services/patients.service';
 import { IPatients } from '../../types/types';
 import { MY_FORMATS } from '../../app/material.module';
+import { Observable, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
+import { ToastrService } from 'ngx-toastr';
+import { DisabledDatesService } from '../../services/disabled-dates.service';
 
 const moment = _rollupMoment || _moment;
 
@@ -43,44 +44,102 @@ const lang = moment.locale('ru');
   ],
 })
 export class RegPageComponent implements OnInit {
-  patientForm: FormGroup;
-  buttonText = 'записаться на прием';
+  patientForm;
   timeStatus = false;
+  phoneErrorMessage: string | null = null;
   arrTimes: string[] = [];
+  arrayDisabledDates: string[] = [];
   minDate: Moment = moment(new Date());
   matcher = new MyErrorStateMatcher();
   constructor(
-    private _formBuilder: FormBuilder,
     private _dateAdapter: DateAdapter<Date>,
     private _patientsService: PatientsService,
-    private _router: Router
+    private _disabledDateService: DisabledDatesService,
+    private _router: Router,
+    private _toastr: ToastrService
   ) {
-    this.patientForm = this._formBuilder.group({
+    // bind context with date of datepicker
+    this.sundayAndDisabledDatesFilter =
+      this.sundayAndDisabledDatesFilter.bind(this);
+    // create patient form
+    this.patientForm = new FormGroup({
       name: new FormControl('', [
         Validators.required,
         Validators.pattern(/^[a-zA-Zа-яА-Я\s]*$/),
       ]),
-      phone: new FormControl('', Validators.required),
-      email: new FormControl('', Validators.email),
-      date: new FormControl('', Validators.required),
+
+      phone: new FormControl('', {
+        validators: [Validators.required, Validators.minLength(16)],
+        asyncValidators: [this.phoneValidator.bind(this)],
+      }),
+      email: new FormControl(
+        '',
+        Validators.pattern(
+          /^[a-z0-9][a-z0-9-_\.]+@([a-z]|[a-z0-9]?[a-z0-9-]+[a-z0-9])\.[a-z0-9]{2,10}(?:\.[a-z]{2,10})?$/
+        )
+      ),
+      date: new FormControl<Moment>(moment(''), Validators.required),
       time: new FormControl('', Validators.required),
       policy: new FormControl(false, Validators.requiredTrue),
     });
   }
   ngOnInit() {
+    // set calendar for CIS format
     this._dateAdapter.setLocale('ru-RU');
+    // get disanled dates from api
+    this.getDisabledDates();
   }
 
-  sundayAndDisabledDatesFilter(date: Moment | null) {
-    const arr = ['01-10-2024', '03-10-2024', '10-10-2024'];
-    const time = date?.valueOf();
+  // get disabled dates from api
+  getDisabledDates() {
+    this._disabledDateService.getDisabledDates().subscribe((result) => {
+      console.log('getDisabledDates result', result);
+      if (result.errorCode === 0) {
+        if (result.body && result.body.length > 0) {
+          this.arrayDisabledDates = result.body.map((d) => d.disabledDate);
 
-    const day = date ? date.isoWeekday() : new Date();
-    return (
-      day !== 7 && !arr.find((d) => moment(d, 'DD-MM-YYYY').valueOf() === time)
+          console.log('getDisabledDates', this.arrayDisabledDates);
+        } else {
+          this.arrayDisabledDates = [];
+          console.log('getDisabledDates', this.arrayDisabledDates);
+        }
+      }
+      if (result.errorCode === 1) {
+        this._toastr.error(
+          `Не удалось получить массив заблокированных дат.`,
+          'Ошибка сервера',
+          {
+            disableTimeOut: true,
+          }
+        );
+      }
+    });
+  }
+
+  // async validator phone
+  phoneValidator(
+    control: AbstractControl
+  ): Observable<{ [key: string]: any } | null> {
+    return this._patientsService.validatePhone(control.value).pipe(
+      map((response) => {
+        this.phoneErrorMessage = response.message;
+        return response.isValid ? null : { invalidPhone: true };
+      }),
+      catchError((e) => {
+        this.phoneErrorMessage = e.errorMessage;
+        return of({ invalidPhone: true });
+      })
     );
   }
 
+  // filter date by Sunday and disabled dates
+  sundayAndDisabledDatesFilter(date: Moment | null) {
+    const day = date?.isoWeekday();
+    const input = moment(date).format('DD-MM-YYYY');
+    return day !== 7 && !this.arrayDisabledDates.includes(input);
+  }
+
+  // time field handler
   onChangeDate(event: MatDatepickerInputEvent<Moment>) {
     const cisDateFormat = event.value?.format('DD-MM-YYYY');
     if (cisDateFormat) {
@@ -88,27 +147,65 @@ export class RegPageComponent implements OnInit {
         date: cisDateFormat,
       };
       this._patientsService.postTimeByDate(bodyObject).subscribe((result) => {
-        if (result.body.length > 0) {
-          this.arrTimes = result.body;
-          this.timeStatus = true;
+        if (result.errorCode === 0) {
+          if (result.body.length > 0) {
+            this.arrTimes = result.body;
+            this.timeStatus = true;
+          }
+        } else {
+          this._toastr.error(
+            `Не удалось получить массив времени.`,
+            'Ошибка сервера',
+            {
+              disableTimeOut: true,
+            }
+          );
         }
       });
     }
   }
 
+  // form submit handler
   onFormSubmit() {
     if (this.patientForm.valid) {
       const bodyObject: IPatients = {
         name: this.patientForm.value?.name,
         phone: this.patientForm.value?.phone,
         email: this.patientForm.value?.email,
-        date: this.patientForm.value?.date.format('DD-MM-YYYY'),
+        date: this.patientForm.value?.date?.format('DD-MM-YYYY'),
         time: this.patientForm.value?.time,
       };
+
       if (bodyObject) {
         this._patientsService.postPatients(bodyObject).subscribe((result) => {
-          alert('suc add patient');
           console.log('respostpatient', result);
+          if (result.errorCode === 0) {
+            this._toastr.success(
+              `Вы успешно оформили запись на ${result.body.date}, время: ${result.body.time}`,
+              'Спасибо за регистрацию',
+              {
+                disableTimeOut: true,
+              }
+            );
+          }
+          if (result.errorCode === 1) {
+            this._toastr.error(
+              `Что-то пошло не так, попробуйте снова.`,
+              'Ошибка сервера',
+              {
+                disableTimeOut: true,
+              }
+            );
+          }
+          if (result.errorCode === 2) {
+            this._toastr.error(
+              `Не удалось отправить сообщение на указанную почту.`,
+              'Ошибка отправки почты',
+              {
+                disableTimeOut: true,
+              }
+            );
+          }
           this._router.navigate(['/preview']);
         });
       }

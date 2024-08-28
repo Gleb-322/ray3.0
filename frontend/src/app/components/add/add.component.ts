@@ -1,10 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import {
-  FormControl,
-  FormBuilder,
-  Validators,
-  FormGroup,
-} from '@angular/forms';
+import { FormControl, Validators, FormGroup } from '@angular/forms';
 
 import { MatDialogRef } from '@angular/material/dialog';
 
@@ -34,7 +29,7 @@ const moment = _rollupMoment || _moment;
 const lang = moment.locale('ru');
 
 @Component({
-  selector: 'app-add-edit',
+  selector: 'app-add',
   templateUrl: './add.component.html',
   providers: [
     { provide: MAT_DATE_LOCALE, useValue: lang },
@@ -42,16 +37,13 @@ const lang = moment.locale('ru');
   ],
 })
 export class AddComponent implements OnInit {
-  addForm: FormGroup;
-  buttonText = 'сделать запись';
-  buttonCancelText = 'назад';
+  addForm;
   timeStatus = false;
   arrTimes: string[] = [];
   arrayDisabledDates: string[] = [];
   minDate: Moment = moment(new Date());
   matcher = new MyErrorStateMatcher();
   constructor(
-    private _formBuilder: FormBuilder,
     private _dateAdapter: DateAdapter<Date>,
     private _patientsService: PatientsService,
     private _disabledDateService: DisabledDatesService,
@@ -60,19 +52,29 @@ export class AddComponent implements OnInit {
     this.sundayAndDisabledDatesFilter =
       this.sundayAndDisabledDatesFilter.bind(this);
 
-    this.addForm = this._formBuilder.group({
+    this.addForm = new FormGroup({
       name: new FormControl('', [
         Validators.required,
         Validators.pattern(/^[a-zA-Zа-яА-Я\s]*$/),
       ]),
-      phone: new FormControl('', Validators.required),
-      email: new FormControl('', Validators.email),
-      date: new FormControl('', Validators.required),
+      phone: new FormControl('', [
+        Validators.required,
+        Validators.minLength(16),
+      ]),
+      email: new FormControl(
+        '',
+        Validators.pattern(
+          /^[a-z0-9][a-z0-9-_\.]+@([a-z]|[a-z0-9]?[a-z0-9-]+[a-z0-9])\.[a-z0-9]{2,10}(?:\.[a-z]{2,10})?$/
+        )
+      ),
+      date: new FormControl<Moment>(moment(''), Validators.required),
       time: new FormControl('', Validators.required),
     });
   }
   ngOnInit() {
+    // set calendar for CIS format
     this._dateAdapter.setLocale('ru-RU');
+    // get disanled dates from api
     this.getDisabledDates();
   }
 
@@ -116,7 +118,7 @@ export class AddComponent implements OnInit {
         name: this.addForm.value?.name,
         phone: this.addForm.value?.phone,
         email: this.addForm.value?.email,
-        date: this.addForm.value?.date.format('DD-MM-YYYY'),
+        date: this.addForm.value?.date?.format('DD-MM-YYYY'),
         time: this.addForm.value?.time,
       };
       if (bodyObject) {

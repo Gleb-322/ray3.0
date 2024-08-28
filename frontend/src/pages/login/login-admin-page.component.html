@@ -1,11 +1,11 @@
 <div class="bg-slate-200 w-screen h-screen flex justify-center items-center">
-  <mat-card class="w-[400px] h-[375px] p-[30px] flex flex-col items-center">
+  <mat-card class="w-[450px] h-[400px] p-[20px] flex flex-col items-center">
     <mat-card-header>
-      <h2>Админ панель</h2>
+      <div class="">Админ панель</div>
     </mat-card-header>
     <mat-card-content class="w-full h-full">
       <form
-        class="w-full h-full flex flex-col justify-between"
+        class="w-full grid grid-raws-[repeat(4,80px)] gap-[10px] mt-[5px]"
         [formGroup]="adminForm"
         (ngSubmit)="onFormSubmit()"
       >
@@ -48,7 +48,7 @@
           </mat-error>
         </mat-form-field>
 
-        <div *ngIf="errorMessageStatus" class="text-red-500">
+        <div *ngIf="errorMessageStatus" class="text-[13px] text-[#f44336]">
           {{ errorMessage }}
         </div>
 
@@ -59,7 +59,7 @@
             mat-stroked-button
           >
             <mat-icon>input</mat-icon>
-            {{ buttonText | uppercase }}
+            {{ "войти" | uppercase }}
           </button>
         </div>
       </form>

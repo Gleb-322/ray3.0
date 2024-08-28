@@ -34,12 +34,17 @@
           name="phone"
           [showMaskTyped]="true"
           mask="(000)-00-000"
+          prefix="+373"
+          [dropSpecialCharacters]="false"
           [errorStateMatcher]="matcher"
           formControlName="phone"
         />
         <mat-icon matSuffix class="text-gray-500">call</mat-icon>
         <mat-error *ngIf="editForm.get('phone')?.hasError('required')">
           Введите телефон!
+        </mat-error>
+        <mat-error *ngIf="editForm.get('phone')?.hasError('minlength')">
+          Введите телефон полностью!
         </mat-error>
       </mat-form-field>
 
@@ -54,7 +59,7 @@
           formControlName="email"
         />
         <mat-icon matSuffix class="text-gray-500">mail</mat-icon>
-        <mat-error *ngIf="editForm.get('email')?.hasError('email')">
+        <mat-error *ngIf="editForm.get('email')?.hasError('pattern')">
           Введите существующий адрес!
         </mat-error>
       </mat-form-field>

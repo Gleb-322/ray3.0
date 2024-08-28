@@ -1,15 +1,15 @@
 <section
-  class="bg-main-bg bg-no-repeat bg-center bg-cover w-screen h-screen flex justify-center pt-20"
+  class="min-[320px]:bg-white min-[1280px]:bg-main-bg min-[1280px]:bg-no-repeat min-[1280px]:bg-center min-[1280px]:bg-cover min-[1280px]:pt-[25px] w-screen h-screen flex justify-center"
 >
   <form
-    class="flex flex-col space-y-4 w-[600px] h-[600px] bg-slate-50 p-4 rounded-sm"
+    class="flex flex-col shadow-lg space-y-4 min-[320px]:h-[720px] p-[1px] min-[320px]:w-full sm:w-[600px] sm:h-[750px] custom-laptop-media:w-full bg-slate-50 sm:p-4 rounded-sm"
     [formGroup]="patientForm"
     (ngSubmit)="onFormSubmit()"
   >
-    <div class="flex">
-      <button class="bg-red-600">назад</button>
-      <legend class="text-xl font-bold">Заполните форму для записи</legend>
-    </div>
+    <legend class="text-xl font-bold text-center mt-[4px]">
+      Заполните данные формы
+    </legend>
+
     <mat-divider></mat-divider>
     <mat-form-field>
       <mat-label>Ваше имя и фамилия</mat-label>
@@ -35,20 +35,31 @@
 
     <mat-form-field>
       <mat-label>Ваш телефон</mat-label>
-      <span matTextPrefix>+373 &nbsp;</span>
+
       <input
-        type="text"
         matInput
-        formControlName="phone"
+        type="text"
         name="phone"
+        formControlName="phone"
         [showMaskTyped]="true"
         mask="(000)-00-000"
+        prefix="+373"
+        [dropSpecialCharacters]="false"
         [errorStateMatcher]="matcher"
       />
 
       <mat-icon matSuffix class="text-gray-500">call</mat-icon>
+
       <mat-error *ngIf="patientForm.get('phone')?.hasError('required')">
         Пожалуйста введите телефон!
+      </mat-error>
+
+      <mat-error *ngIf="patientForm.get('phone')?.hasError('minlength')">
+        Введите телефон полностью!
+      </mat-error>
+
+      <mat-error *ngIf="patientForm.get('phone')?.hasError('invalidPhone')">
+        {{ phoneErrorMessage }}
       </mat-error>
     </mat-form-field>
 
@@ -63,7 +74,7 @@
         [errorStateMatcher]="matcher"
       />
       <mat-icon matSuffix class="text-gray-500">mail</mat-icon>
-      <mat-error *ngIf="patientForm.get('email')?.hasError('email')">
+      <mat-error *ngIf="patientForm.get('email')?.hasError('pattern')">
         Пожалуйста введите существующий адрес!
       </mat-error>
     </mat-form-field>
@@ -111,7 +122,11 @@
 
     <mat-checkbox formControlName="policy" color="primary">
       Я согласен(а) с
-      <a routerLink="/policy"><strong>политикой конфиденциальности</strong></a>
+      <a
+        class="text-stone-900 underline hover:text-red-800"
+        routerLink="/policy"
+        ><strong>политикой конфиденциальности</strong></a
+      >
     </mat-checkbox>
     <mat-error *ngIf="patientForm.get('policy')?.hasError('required')">
       Вы не согласились!
@@ -119,7 +134,16 @@
 
     <button type="submit" [disabled]="!patientForm.valid" mat-raised-button>
       <mat-icon class="text-gray-500">person_add</mat-icon>
-      {{ buttonText | uppercase }}
+      {{ "записаться на прием" | uppercase }}
+    </button>
+    <button
+      color="primary"
+      type="button"
+      mat-raised-button
+      routerLink="/preview"
+    >
+      <mat-icon class="text-stone-50">keyboard_backspace</mat-icon>
+      {{ "назад" | uppercase }}
     </button>
   </form>
 </section>

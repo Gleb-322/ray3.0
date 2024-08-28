@@ -7,8 +7,6 @@ const disableDatesRouter = require('./routers/disabledDates')
 const Admin = require('./models/admin')
 const bcrypt = require('bcryptjs')
 
-const { sendEmail } = require('./emails/email')
-
 const app = express()
 const port = process.env.PORT
 
@@ -21,9 +19,6 @@ app.use(disableDatesRouter)
 app.listen(port, () => {
 	console.log(`App is up on port ${port}`)
 })
-
-sendEmail('gyrra91@yandex.ru', '25-05-2024', '13-00')
-// sendEmail('raycheva.org@gmail.com', '26-05-2024', '13-30')
 
 // const f = async () => {
 // 	const password = await bcrypt.hash(process.env.PASS, 8)

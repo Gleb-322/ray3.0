@@ -10,6 +10,7 @@ import { AnalyticsPageComponent } from '../pages/analytics-page/analytics-page.c
 import { PatientsPageComponent } from '../pages/patients-page/patients-page.component';
 import { authGuard } from '../services/auth.guard';
 import { PolicyPageComponent } from '../pages/policy-page/policy-page.component';
+import { CheckComponent } from './components/check/check.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginPageComponent },
@@ -22,6 +23,7 @@ const routes: Routes = [
     children: [
       { path: 'preview', component: PreviewPageComponent },
       { path: 'registration', component: RegPageComponent },
+      { path: 'check', component: CheckComponent },
     ],
   },
   {

@@ -18,6 +18,7 @@ import { LayoutComponent } from './components/layout/layout.component';
 import { AddComponent } from './components/add/add.component';
 import { EditComponent } from './components/edit/edit.component';
 import { DialogComponent } from './components/dialog/dialog.component';
+import { CheckComponent } from './components/check/check.component';
 
 import { PreviewPageComponent } from '../pages/preview/preview-page.component';
 import { RegPageComponent } from '../pages/registration/reg-page.component';
@@ -44,6 +45,7 @@ import { PolicyPageComponent } from '../pages/policy-page/policy-page.component'
     AddComponent,
     EditComponent,
     DialogComponent,
+    CheckComponent,
   ],
   imports: [
     BrowserModule,

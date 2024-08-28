@@ -13,6 +13,8 @@ export interface IPatients {
   time: string | null | undefined;
   _id?: string;
   previousDate?: string;
+  previousTime?: string;
+  previousEmail?: string;
 }
 export interface IAdmin {
   login: string | null | undefined;
@@ -22,4 +24,8 @@ export interface IAdmin {
 export interface IDialogData {
   title: string;
   body: string;
+}
+
+export interface IPhone {
+  phone: string | null | undefined;
 }

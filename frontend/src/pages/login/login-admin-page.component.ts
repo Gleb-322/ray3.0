@@ -1,10 +1,16 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormControl, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormControl,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
 import { AdminService } from '../../services/admin.service';
 
 import { MyErrorStateMatcher } from '../../app/material.module';
 import { IAdmin } from '../../types/types';
 import { Router } from '@angular/router';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'login-admin-page',
@@ -12,21 +18,17 @@ import { Router } from '@angular/router';
 })
 export class LoginPageComponent {
   hide = true;
-  buttonText = 'войти';
-  errorMessage = '';
+  adminForm;
+  errorMessage: string | null = null;
   errorMessageStatus = false;
   matcher = new MyErrorStateMatcher();
 
-  constructor(
-    private formBuilder: FormBuilder,
-    private adminService: AdminService,
-    private router: Router
-  ) {}
-
-  adminForm = this.formBuilder.group({
-    login: new FormControl('', Validators.required),
-    password: new FormControl('', Validators.required),
-  });
+  constructor(private _adminService: AdminService, private router: Router) {
+    this.adminForm = new FormGroup({
+      login: new FormControl('', Validators.required),
+      password: new FormControl('', [Validators.required]),
+    });
+  }
 
   onFormSubmit() {
     const postObject = {
@@ -34,7 +36,7 @@ export class LoginPageComponent {
       password: this.adminForm.value?.password,
     };
     if (postObject) {
-      this.adminService.postLoginAdmin(postObject).subscribe((result) => {
+      this._adminService.postLoginAdmin(postObject).subscribe((result) => {
         if (result.errorMessage) {
           this.errorMessage = result.errorMessage;
           this.errorMessageStatus = true;

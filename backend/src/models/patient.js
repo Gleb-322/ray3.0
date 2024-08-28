@@ -25,8 +25,6 @@ const patientsShema = new mongoose.Schema(
 			required: true,
 			trim: true,
 		},
-
-		// freeTime: [String],
 	},
 	{ timestamps: true }
 )

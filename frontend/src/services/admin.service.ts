@@ -7,7 +7,6 @@ import { Observable, tap } from 'rxjs';
   providedIn: 'root',
 })
 export class AdminService {
-  loginStatus = true;
   constructor(private _http: HttpClient) {}
 
   //login admin
@@ -15,23 +14,19 @@ export class AdminService {
     body: any;
     token: string;
     errorMessage: null | string;
-    success: boolean;
     errorCode: number;
   }> {
-    return this._http
-      .post<{
-        body: any;
-        token: string;
-        errorMessage: null | string;
-        success: boolean;
-        errorCode: number;
-      }>('http://localhost:3000/admin/login', body)
-      .pipe(tap(() => (this.loginStatus = true)));
+    return this._http.post<{
+      body: any;
+      token: string;
+      errorMessage: null | string;
+      errorCode: number;
+    }>('http://localhost:3000/admin/login', body);
   }
 
   // logout admin
   logOutAdmin(): void {
-    this.loginStatus = false;
+    // this.loginStatus = false;
   }
 
   // get all patients

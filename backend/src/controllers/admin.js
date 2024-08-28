@@ -2,6 +2,7 @@ const Patients = require('../models/patient')
 const Admin = require('../models/admin')
 const bcrypt = require('bcryptjs')
 const DisabledDates = require('../models/disabledDates')
+const { sendEmail } = require('../emails/email')
 
 const getPatients = async (req, res) => {
 	try {
@@ -64,6 +65,8 @@ const loginAdmin = async (req, res) => {
 
 const updatePatients = async (req, res) => {
 	try {
+		console.log(req.body)
+
 		const updatePatientBodyOnbject = {
 			name: req.body.name,
 			phone: req.body.phone,
@@ -81,6 +84,7 @@ const updatePatients = async (req, res) => {
 				returnDocument: 'after',
 			}
 		)
+
 		if (!patient) {
 			return res.status(200).send({
 				body: null,
@@ -88,6 +92,42 @@ const updatePatients = async (req, res) => {
 				success: false,
 				errorCode: 2,
 			})
+		}
+
+		if (req.body.previousEmail === '' && req.body.email !== '') {
+			const result = sendEmail(req.body.email, req.body.date, req.body.time)
+			result
+				.then(res => {})
+				.catch(e => {
+					return res.send({
+						body: null,
+						errorMessage: e.error,
+						success: false,
+						errorCode: 2,
+					})
+				})
+		}
+
+		if (req.body.previousEmail !== '' && req.body.email !== '') {
+			if (
+				req.body.previousEmail !== req.body.email ||
+				req.body.previousDate !== req.body.date ||
+				req.body.previousTime !== req.body.time
+			) {
+				const result = sendEmail(req.body.email, req.body.date, req.body.time)
+				result
+					.then(res => {
+						console.log(res)
+					})
+					.catch(e => {
+						return res.send({
+							body: null,
+							errorMessage: e.error,
+							success: false,
+							errorCode: 2,
+						})
+					})
+			}
 		}
 
 		const countOfNewDates = await Patients.find({ date: req.body.date })

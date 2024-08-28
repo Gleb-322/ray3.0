@@ -33,7 +33,6 @@ const lang = moment.locale('ru');
 @Component({
   selector: 'app-patients-page',
   templateUrl: './patients-page.component.html',
-  styleUrl: './patients-page.component.css',
   providers: [
     { provide: MAT_DATE_LOCALE, useValue: lang },
     { provide: MAT_DATE_FORMATS, useValue: MY_FORMATS },
@@ -209,6 +208,7 @@ export class PatientsPageComponent implements AfterViewInit, OnInit {
     this.end = moment(event.value, 'DD-MM-YYYY');
     this.dateRangeChange();
   }
+
   // change range disabled dates
   dateRangeChange() {
     if (this.start && this.end) {

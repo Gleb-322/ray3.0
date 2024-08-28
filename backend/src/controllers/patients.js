@@ -1,16 +1,32 @@
 const Patients = require('../models/patient')
 const DisabledDates = require('../models/disabledDates')
+const { sendEmail } = require('../emails/email')
 
 const createPatient = async (req, res) => {
 	try {
+		const { email, date, time } = req.body
+
 		const patient = new Patients(req.body)
 		await patient.save()
 
-		const dates = await Patients.find({ date: req.body.date })
+		if (email !== '') {
+			const result = sendEmail(email, date, time)
+			result
+				.then(res => {})
+				.catch(e => {
+					return res.send({
+						body: null,
+						errorMessage: e.error,
+						errorCode: 2,
+					})
+				})
+		}
+
+		const dates = await Patients.find({ date })
 
 		if (dates.length === 16) {
 			const disDate = new DisabledDates({
-				disabledDate: req.body.date,
+				disabledDate: date,
 				full: true,
 			})
 			await disDate.save()
@@ -19,20 +35,19 @@ const createPatient = async (req, res) => {
 		res.status(201).send({
 			body: patient,
 			errorMessage: null,
-			success: true,
 			errorCode: 0,
 		})
 	} catch (e) {
-		res.status(200).send({
+		res.send({
 			body: null,
 			errorMessage: e.message,
-			success: false,
 			errorCode: 1,
 		})
 	}
 }
 
 const getTimeByDate = async (req, res) => {
+	const { date } = req.body
 	const timeArr = [
 		'09-00',
 		'09-30',
@@ -52,12 +67,11 @@ const getTimeByDate = async (req, res) => {
 		'16-30',
 	]
 	try {
-		const dates = await Patients.find({ date: req.body.date })
+		const dates = await Patients.find({ date })
 		if (!dates) {
 			return res.send({
 				body: timeArr,
 				errorMessage: null,
-				success: true,
 				errorCode: 0,
 			})
 		}
@@ -67,14 +81,80 @@ const getTimeByDate = async (req, res) => {
 		res.send({
 			body: timeByDates,
 			errorMessage: null,
-			success: true,
 			errorCode: 0,
 		})
 	} catch (e) {
-		res.status(200).send({
+		res.send({
 			body: null,
 			errorMessage: e.message,
-			success: false,
+			errorCode: 1,
+		})
+	}
+}
+
+const validatePhone = async (req, res) => {
+	try {
+		const adminPhone = '+373(777)-24-634'
+		const { phone } = req.body
+
+		const patient = await Patients.findOne({ phone })
+
+		if (patient && patient.phone !== adminPhone) {
+			return res.status(200).send({
+				isValid: false,
+				message: `Запись уже оформлена: ${patient.date} на ${patient.time}`,
+			})
+		} else {
+			return res.status(200).send({
+				isValid: true,
+				message: null,
+			})
+		}
+	} catch (e) {
+		res.send({
+			errorMessage: 'Ошибка сервера, попробуйте снова',
+		})
+	}
+}
+
+const getPatientByPhone = async (req, res) => {
+	try {
+		const adminPhoneNumber = '+373(777)-24-634'
+		const { phone } = req.body
+
+		const patient = await Patients.findOne({ phone })
+
+		if (phone === adminPhoneNumber) {
+			return res.status(200).send({
+				body: null,
+				adminPhone: true,
+				errorMessage: null,
+				errorCode: 0,
+			})
+		}
+
+		if (!patient) {
+			return res.status(200).send({
+				body: null,
+				adminPhone: false,
+				errorMessage: null,
+				errorCode: 0,
+			})
+		}
+
+		if (patient && patient.phone !== adminPhoneNumber) {
+			return res.status(200).send({
+				body: patient,
+				adminPhone: false,
+				errorMessage: null,
+				errorCode: 0,
+			})
+		}
+	} catch (e) {
+		res.send({
+			body: null,
+			adminPhone: false,
+			errorMessage: e.message,
 			errorCode: 1,
 		})
 	}
@@ -83,4 +163,6 @@ const getTimeByDate = async (req, res) => {
 module.exports = {
 	createPatient,
 	getTimeByDate,
+	getPatientByPhone,
+	validatePhone,
 }
