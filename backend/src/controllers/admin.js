@@ -4,17 +4,78 @@ const bcrypt = require('bcryptjs')
 const DisabledDates = require('../models/disabledDates')
 const { sendEmail } = require('../emails/email')
 
+// login admin page
+const loginAdmin = async (req, res) => {
+	try {
+		const { login, password } = req.body
+		const admin = await Admin.findOne({
+			login,
+		})
+
+		if (!admin) {
+			return res.status(200).send({
+				token: null,
+				errorMessage: 'Неверный логин или пароль!',
+				errorCode: 2,
+			})
+		}
+
+		const isMatch = await bcrypt.compare(password, admin.password)
+
+		if (!isMatch) {
+			return res.status(200).send({
+				token: null,
+				errorMessage: 'Неверный логин или пароль!',
+				errorCode: 2,
+			})
+		}
+
+		const token = await admin.generateAuthToken()
+		res.send({
+			token,
+			errorMessage: null,
+			errorCode: 0,
+		})
+	} catch (e) {
+		res.status(200).send({
+			token: null,
+			errorMessage: e.message,
+			errorCode: 1,
+		})
+	}
+}
+
+// logout admin page
+const logoutAdmin = async (req, res) => {
+	try {
+		req.admin.tokens = req.admin.tokens.filter(
+			token => token.token !== req.token
+		)
+
+		await req.admin.save()
+		res.send({
+			message: 'Успех',
+			errorCode: 0,
+		})
+	} catch (e) {
+		res.send({
+			message: e.message,
+			errorCode: 1,
+		})
+	}
+}
+
+// CRUD in admin page
+// get all patients from db to admin page
 const getPatients = async (req, res) => {
 	try {
-		const patients = await req.paginatedResult
-		const endIndex = await req.endIndex
-		const count = await req.count
+		const patients = await req.patientsPerPage
+		const countPatients = await req.count
 
 		res.send({
 			body: patients,
-			count,
+			count: countPatients,
 			errorMessage: null,
-			success: true,
 			errorCode: 0,
 		})
 	} catch (e) {
@@ -22,51 +83,14 @@ const getPatients = async (req, res) => {
 			body: null,
 			count: null,
 			errorMessage: e.message,
-			success: false,
 			errorCode: 1,
 		})
 	}
 }
 
-const loginAdmin = async (req, res) => {
-	try {
-		const admin = await Admin.findOne({
-			login: req.body.login,
-		})
-
-		if (!admin) {
-			throw new Error('Неверный логин или пароль!')
-		}
-
-		const isMatch = await bcrypt.compare(req.body.password, admin.password)
-
-		if (!isMatch) {
-			throw new Error('Неверный логин или пароль!')
-		}
-
-		const token = await admin.generateAuthToken()
-		res.send({
-			body: admin,
-			token,
-			errorMessage: null,
-			success: true,
-			errorCode: 0,
-		})
-	} catch (e) {
-		res.status(200).send({
-			body: null,
-			token: null,
-			errorMessage: e.message,
-			success: false,
-			errorCode: 1,
-		})
-	}
-}
-
+// update data one patient in db
 const updatePatients = async (req, res) => {
 	try {
-		console.log(req.body)
-
 		const updatePatientBodyOnbject = {
 			name: req.body.name,
 			phone: req.body.phone,
@@ -86,10 +110,9 @@ const updatePatients = async (req, res) => {
 		)
 
 		if (!patient) {
-			return res.status(200).send({
+			return res.send({
 				body: null,
 				errorMessage: 'Такой пациент не найден!',
-				success: false,
 				errorCode: 2,
 			})
 		}
@@ -102,8 +125,7 @@ const updatePatients = async (req, res) => {
 					return res.send({
 						body: null,
 						errorMessage: e.error,
-						success: false,
-						errorCode: 2,
+						errorCode: 3,
 					})
 				})
 		}
@@ -116,15 +138,12 @@ const updatePatients = async (req, res) => {
 			) {
 				const result = sendEmail(req.body.email, req.body.date, req.body.time)
 				result
-					.then(res => {
-						console.log(res)
-					})
+					.then(res => {})
 					.catch(e => {
 						return res.send({
 							body: null,
 							errorMessage: e.error,
-							success: false,
-							errorCode: 2,
+							errorCode: 3,
 						})
 					})
 			}
@@ -166,19 +185,18 @@ const updatePatients = async (req, res) => {
 		res.send({
 			body: patient,
 			errorMessage: null,
-			success: true,
 			errorCode: 0,
 		})
 	} catch (e) {
 		res.status(200).send({
 			body: null,
 			errorMessage: e.message,
-			success: false,
 			errorCode: 1,
 		})
 	}
 }
 
+// delete one patient from db
 const deletePatients = async (req, res) => {
 	try {
 		const patient = await Patients.findOneAndDelete({ _id: req.params.id })
@@ -186,47 +204,29 @@ const deletePatients = async (req, res) => {
 			return res.send({
 				body: null,
 				errorMessage: 'Такой пациент не найден!',
-				success: false,
 				errorCode: 2,
 			})
 		}
 
-		const patientDate = patient.date
-
 		const checkDisableDate = await DisabledDates.findOne({
-			disabledDate: patientDate,
+			disabledDate: patient.date,
 		})
 
 		if (checkDisableDate) {
-			await DisabledDates.findOneAndDelete({ disabledDate: patientDate })
+			await DisabledDates.findOneAndDelete({ disabledDate: patient.date })
 		}
 
 		res.send({
 			body: patient,
 			errorMessage: null,
-			success: true,
 			errorCode: 0,
 		})
 	} catch (e) {
 		res.status(200).send({
 			body: null,
 			errorMessage: e.message,
-			success: false,
 			errorCode: 1,
 		})
-	}
-}
-
-const logoutAdmin = async (req, res) => {
-	try {
-		req.admin.tokens = req.admin.tokens.filter(
-			token => token.token !== req.token
-		)
-
-		await req.admin.save()
-		res.send('Succes loguot!')
-	} catch (e) {
-		res.status(500).send({ error: e.message })
 	}
 }
 

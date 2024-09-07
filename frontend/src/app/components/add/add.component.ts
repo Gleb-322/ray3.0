@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, Validators, FormGroup } from '@angular/forms';
 
-import { MatDialogRef } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 import { MatDatepickerInputEvent } from '@angular/material/datepicker';
 
@@ -23,6 +23,8 @@ import { PatientsService } from '../../../services/patients.service';
 import { IPatients } from '../../../types/types';
 import { MY_FORMATS } from '../../material.module';
 import { DisabledDatesService } from '../../../services/disabled-dates.service';
+import { ToastrService } from 'ngx-toastr';
+import { DialogComponent } from '../dialog/dialog.component';
 
 const moment = _rollupMoment || _moment;
 
@@ -47,11 +49,14 @@ export class AddComponent implements OnInit {
     private _dateAdapter: DateAdapter<Date>,
     private _patientsService: PatientsService,
     private _disabledDateService: DisabledDatesService,
-    private _dialogRef: MatDialogRef<AddComponent>
+    private _dialogRef: MatDialogRef<AddComponent>,
+    private _dialog: MatDialog,
+    private _toastr: ToastrService
   ) {
+    // bind context with date of datepicker
     this.sundayAndDisabledDatesFilter =
       this.sundayAndDisabledDatesFilter.bind(this);
-
+    // create add form
     this.addForm = new FormGroup({
       name: new FormControl('', [
         Validators.required,
@@ -90,12 +95,14 @@ export class AddComponent implements OnInit {
     });
   }
 
+  // filter date by Sunday and disabled dates
   sundayAndDisabledDatesFilter(date: Moment | null) {
     const day = date?.isoWeekday();
     const input = moment(date).format('DD-MM-YYYY');
     return day !== 7 && !this.arrayDisabledDates.includes(input);
   }
 
+  // time field handler
   onChangeDate(event: MatDatepickerInputEvent<Moment>) {
     const cisDateFormat = event.value?.format('DD-MM-YYYY');
     if (cisDateFormat) {
@@ -103,34 +110,87 @@ export class AddComponent implements OnInit {
         date: cisDateFormat,
       };
       this._patientsService.postTimeByDate(bodyObject).subscribe((result) => {
-        console.log('AddOnChange', result.body);
-        if (result.body) {
-          this.arrTimes = result.body;
-          this.timeStatus = true;
+        if (result.errorCode === 0) {
+          if (result.body.length > 0) {
+            this.arrTimes = result.body;
+            this.timeStatus = true;
+          }
+        } else {
+          this._toastr.error(
+            `Не удалось получить массив времени.`,
+            'Ошибка сервера',
+            {
+              disableTimeOut: true,
+            }
+          );
         }
       });
     }
   }
 
+  // form submit handler
   onFormSubmit() {
-    if (this.addForm.valid) {
-      const bodyObject: IPatients = {
-        name: this.addForm.value?.name,
-        phone: this.addForm.value?.phone,
-        email: this.addForm.value?.email,
-        date: this.addForm.value?.date?.format('DD-MM-YYYY'),
-        time: this.addForm.value?.time,
-      };
-      if (bodyObject) {
-        this._patientsService.postPatients(bodyObject).subscribe((result) => {
-          alert('suc add appointment');
-          console.log('respostpatientfromADMIN', result);
-          this._dialogRef.close(true);
-        });
+    let dialogRef = this._dialog.open(DialogComponent, {
+      data: {
+        title: 'Добавление записи',
+        body: 'Действительно хотите добавить новую запись?',
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result: boolean) => {
+      if (result) {
+        if (this.addForm.valid) {
+          const bodyObject: IPatients = {
+            name: this.addForm.value?.name,
+            phone: this.addForm.value?.phone,
+            email: this.addForm.value?.email,
+            date: this.addForm.value?.date?.format('DD-MM-YYYY'),
+            time: this.addForm.value?.time,
+          };
+          if (bodyObject) {
+            this._patientsService
+              .postPatients(bodyObject)
+              .subscribe((result) => {
+                if (result.errorCode === 0) {
+                  if (result.body) {
+                    this._toastr.success(
+                      `Запись успешно оформлена на ${result.body.date}, время: ${result.body.time}`,
+                      '',
+                      {
+                        progressBar: true,
+                      }
+                    );
+                  }
+                }
+                if (result.errorCode === 1) {
+                  this._toastr.error(
+                    `Что-то пошло не так, попробуйте снова.`,
+                    'Ошибка сервера',
+                    {
+                      disableTimeOut: true,
+                    }
+                  );
+                }
+                if (result.errorCode === 2) {
+                  this._toastr.error(
+                    `Не удалось отправить сообщение на указанную почту.`,
+                    'Ошибка отправки почты',
+                    {
+                      disableTimeOut: true,
+                    }
+                  );
+                }
+                this._dialogRef.close(true);
+              });
+          }
+        }
+      } else {
+        this._dialogRef.close();
       }
-    }
+    });
   }
 
+  // close dialog
   onCancel() {
     this._dialogRef.close();
   }

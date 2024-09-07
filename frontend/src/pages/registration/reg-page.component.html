@@ -20,7 +20,8 @@
         placeholder="Имя и Фамилия"
         formControlName="name"
         name="name"
-        maxLength="40"
+        maxLength="30"
+        autocomplete="off"
         [errorStateMatcher]="matcher"
       />
 
@@ -40,6 +41,7 @@
         matInput
         type="text"
         name="phone"
+        autocomplete="off"
         formControlName="phone"
         [showMaskTyped]="true"
         mask="(000)-00-000"
@@ -69,6 +71,7 @@
         matInput
         type="email"
         placeholder="Адрес почты"
+        autocomplete="off"
         formControlName="email"
         name="email"
         [errorStateMatcher]="matcher"

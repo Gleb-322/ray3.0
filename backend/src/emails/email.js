@@ -5,9 +5,6 @@ const sendgridAPIKey = process.env.SENDGRID_API_KEY
 sgMail.setApiKey(sendgridAPIKey)
 
 const sendEmail = async (adress, date, time) => {
-	console.log('adress', adress)
-	console.log('date', date)
-	console.log('time', time)
 	const messageData = {
 		from: {
 			email: 'raycheva.org@gmail.com',
@@ -30,6 +27,7 @@ const sendEmail = async (adress, date, time) => {
 	try {
 		const response = await sgMail.send(messageData)
 		console.log('send email')
+		console.log('status code email', response[0].statusCode)
 		return response[0].statusCode
 	} catch (e) {
 		return { error: e.message, code: e.code }

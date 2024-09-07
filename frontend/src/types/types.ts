@@ -1,6 +1,7 @@
 export interface IDate {
   date: string;
 }
+
 export interface IRangeDate {
   disabledDate: string;
   full?: boolean;

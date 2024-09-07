@@ -25,6 +25,8 @@ import {
   MatDatepickerInputEvent,
 } from '@angular/material/datepicker';
 import { DialogComponent } from '../../app/components/dialog/dialog.component';
+import { MatButtonToggleChange } from '@angular/material/button-toggle';
+import { MatSelectChange } from '@angular/material/select';
 
 const moment = _rollupMoment || _moment;
 
@@ -39,19 +41,40 @@ const lang = moment.locale('ru');
   ],
 })
 export class PatientsPageComponent implements AfterViewInit, OnInit {
+  panelOpenState = false;
   arrayDisabledDates: string[] = [];
   arrayUndisabledDates: string[] = [];
   patients: IPatients[] = [];
   patientsLength: number | null = 0;
   minDate: Moment = moment(new Date());
   inputValue = '';
-  limit: number = 12;
+  limit: number = 10;
   page: number = 0;
   start: Moment | undefined;
   end: Moment | undefined;
   arrayOfObjectRangeDates: IRangeDate[] = [];
   unlockButtonStatus = false;
   postStatus = false;
+  selectedValue!: string;
+
+  timeArr = [
+    '09-00',
+    '09-30',
+    '10-00',
+    '10-30',
+    '11-00',
+    '11-30',
+    '12-00',
+    '12-30',
+    '13-00',
+    '13-30',
+    '14-00',
+    '14-30',
+    '15-00',
+    '15-30',
+    '16-00',
+    '16-30',
+  ];
 
   displayedColumns: string[] = [
     'created',
@@ -77,6 +100,9 @@ export class PatientsPageComponent implements AfterViewInit, OnInit {
   ) {
     this.sundayAndDisabledDatesFilter =
       this.sundayAndDisabledDatesFilter.bind(this);
+
+    this.sundayAndDisabledUndisabledDatesFilter =
+      this.sundayAndDisabledUndisabledDatesFilter.bind(this);
   }
   ngOnInit(): void {
     this._dateAdapter.setLocale('ru-RU');
@@ -95,9 +121,9 @@ export class PatientsPageComponent implements AfterViewInit, OnInit {
       const start = page * pageSize + 1;
       const end = (page + 1) * pageSize;
       if (end > length) {
-        return `${start} - ${length} из ${length}`;
+        return `${start}-${length} из ${length}`;
       }
-      return `${start} - ${end} из ${length}`;
+      return `${start}-${end} из ${length}`;
     };
   }
 
@@ -106,10 +132,22 @@ export class PatientsPageComponent implements AfterViewInit, OnInit {
     this._adminService
       .getAllPatients(page + 1, limit, keyword)
       .subscribe((result) => {
-        console.log('get patient', result);
+        if (result.errorCode === 0) {
+          if (result.body && result.count) {
+            this.patients = result.body;
+            this.patientsLength = result.count;
+          }
+        }
 
-        this.patients = result.body;
-        this.patientsLength = result.count;
+        if (result.errorCode === 1) {
+          this._toastr.error(
+            `Что-то пошло не так, попробуйте снова.`,
+            'Ошибка сервера',
+            {
+              disableTimeOut: true,
+            }
+          );
+        }
       });
   }
 
@@ -117,7 +155,7 @@ export class PatientsPageComponent implements AfterViewInit, OnInit {
   getDisabledDates() {
     this._disabledDateService.getDisabledDates().subscribe((result) => {
       if (result.errorCode === 0) {
-        if (result.body.length > 0) {
+        if (result.body && result.body.length > 0) {
           this.arrayDisabledDates = result.body.map((d) => d.disabledDate);
           this.arrayUndisabledDates = result.body
             .filter((d) => d.full !== true)
@@ -126,16 +164,23 @@ export class PatientsPageComponent implements AfterViewInit, OnInit {
           this.arrayDisabledDates = [];
           this.arrayUndisabledDates = [];
         }
-      } else {
-        console.log('error get dis dates', result.errorMessage);
       }
-      console.log('this.arrayDisabledDates', this.arrayDisabledDates);
+
+      if (result.errorCode === 1) {
+        this._toastr.error(
+          `Не удалось получить массив заблокированных дат.`,
+          'Ошибка сервера',
+          {
+            disableTimeOut: true,
+          }
+        );
+      }
     });
   }
 
   //create new patient
   openAddForm() {
-    const dialogRef = this._dialog.open(AddComponent);
+    let dialogRef = this._dialog.open(AddComponent);
     dialogRef.afterClosed().subscribe((close) => {
       if (close) {
         this.getDisabledDates();
@@ -146,7 +191,7 @@ export class PatientsPageComponent implements AfterViewInit, OnInit {
 
   //update selected patient
   openEditForm(data: IPatients) {
-    const dialogRef = this._dialog.open(EditComponent, {
+    let dialogRef = this._dialog.open(EditComponent, {
       data,
     });
     dialogRef.afterClosed().subscribe((close) => {
@@ -168,9 +213,35 @@ export class PatientsPageComponent implements AfterViewInit, OnInit {
     dialogRef.afterClosed().subscribe((result: boolean) => {
       if (result) {
         this._adminService.deletePatient(_id).subscribe((result) => {
-          console.log('delete', result);
-          this.getDisabledDates();
-          this.getPatientsList(this.page, this.limit, this.inputValue);
+          if (result.errorCode === 0) {
+            if (result.body) {
+              this.getDisabledDates();
+              this.getPatientsList(this.page, this.limit, this.inputValue);
+              this._toastr.success(
+                `Вы успешно удалили запись на ${result.body.date}, время: ${result.body.time}`,
+                '',
+                {
+                  progressBar: true,
+                }
+              );
+            }
+          }
+
+          if (result.errorCode === 2) {
+            this._toastr.error(`Не удалось найти пациента!`, 'Ошибка сервера', {
+              disableTimeOut: true,
+            });
+          }
+
+          if (result.errorCode === 1) {
+            this._toastr.error(
+              `Что-то пошло не так, попробуйте снова.`,
+              'Ошибка сервера',
+              {
+                disableTimeOut: true,
+              }
+            );
+          }
         });
       }
     });
@@ -182,15 +253,39 @@ export class PatientsPageComponent implements AfterViewInit, OnInit {
     this.getPatientsList(this.page, this.limit, this.inputValue);
   }
 
-  // form submit
+  // input filter
   onChangeFilter(e: Event) {
     const input = e.target as HTMLInputElement;
     this.inputValue = input.value;
     this.getPatientsList(this.page, this.limit, this.inputValue);
   }
 
-  // filter range date picker by Sunday and disabled dates
+  // select filter
+  onChangeSelect(value: string) {
+    this.inputValue = value;
+    this.getPatientsList(this.page, this.limit, this.inputValue);
+  }
+  // date filter
+  onChangeDate(event: MatDatepickerInputEvent<Moment>) {
+    const cisDateFormat = event.value?.format('DD-MM-YYYY');
+    if (cisDateFormat) {
+      this.inputValue = cisDateFormat;
+      this.getPatientsList(this.page, this.limit, this.inputValue);
+    } else {
+      this.inputValue = '';
+      this.getPatientsList(this.page, this.limit, this.inputValue);
+    }
+  }
+
+  // filter date by Sunday and disabled dates
   sundayAndDisabledDatesFilter(date: Moment | null) {
+    const day = date?.isoWeekday();
+    const input = moment(date).format('DD-MM-YYYY');
+    return day !== 7 && !this.arrayDisabledDates.includes(input);
+  }
+
+  // filter range date picker by Sunday and disabled/undisabled dates
+  sundayAndDisabledUndisabledDatesFilter(date: Moment | null) {
     const day = date?.isoWeekday();
     const input = moment(date).format('DD-MM-YYYY');
     if (this.unlockButtonStatus) {
@@ -200,10 +295,12 @@ export class PatientsPageComponent implements AfterViewInit, OnInit {
     return day !== 7 && !this.arrayDisabledDates.includes(input);
   }
 
+  // change start date
   startCahnge(event: MatDatepickerInputEvent<Moment | undefined>) {
     this.start = moment(event.value, 'DD-MM-YYYY');
   }
 
+  // change end date
   endCahnge(event: MatDatepickerInputEvent<Moment | undefined>) {
     this.end = moment(event.value, 'DD-MM-YYYY');
     this.dateRangeChange();
@@ -221,7 +318,6 @@ export class PatientsPageComponent implements AfterViewInit, OnInit {
       }
     }
 
-    console.log('change', this.arrayOfObjectRangeDates);
     if (
       this.arrayOfObjectRangeDates &&
       this.arrayOfObjectRangeDates.length > 0
@@ -255,55 +351,78 @@ export class PatientsPageComponent implements AfterViewInit, OnInit {
   dateRangeSubmit() {
     if (this.postStatus) {
       if (this.unlockButtonStatus) {
-        console.log(
-          'this.arrayOfObjectRangeDates',
-          this.arrayOfObjectRangeDates
-        );
         this._disabledDateService
           .postUnlockDisabledDates(this.arrayOfObjectRangeDates)
           .subscribe((result) => {
-            console.log('post undis suc', result);
-            if (result.body) {
-              this.start = undefined;
-              this.end = undefined;
-              this.arrayOfObjectRangeDates = [];
-              this.getDisabledDates();
-              this.unlockButtonStatus = false;
-              this.postStatus = false;
+            if (result.errorCode === 0) {
+              if (result.body) {
+                this.start = undefined;
+                this.end = undefined;
+                this.arrayOfObjectRangeDates = [];
+                this.getDisabledDates();
+                this.unlockButtonStatus = false;
+                this.postStatus = false;
+                this._toastr.success(
+                  `Дата(ы) успешно разблокировалась(ись)!`,
+                  '',
+                  {
+                    progressBar: true,
+                  }
+                );
+              }
+            }
+
+            if (result.errorCode === 1) {
+              this._toastr.error(
+                `Что-то пошло не так, попробуйте снова.`,
+                'Ошибка сервера',
+                {
+                  disableTimeOut: true,
+                }
+              );
             }
           });
       } else {
         this._disabledDateService
           .postDisabledDates(this.arrayOfObjectRangeDates)
           .subscribe((result) => {
-            console.log('post suc', result);
-            if (result.body) {
-              this.start = undefined;
-              this.end = undefined;
-              this.arrayOfObjectRangeDates = [];
-              this.getDisabledDates();
-              this.postStatus = false;
+            if (result.errorCode === 0) {
+              if (result.body) {
+                this.start = undefined;
+                this.end = undefined;
+                this.arrayOfObjectRangeDates = [];
+                this.getDisabledDates();
+                this.postStatus = false;
+                this._toastr.success(
+                  `Дата(ы) успешно заблокировалась(ись)!`,
+                  '',
+                  {
+                    progressBar: true,
+                  }
+                );
+              }
+            }
+
+            if (result.errorCode === 1) {
+              this._toastr.error(
+                `Что-то пошло не так, попробуйте снова.`,
+                'Ошибка сервера',
+                {
+                  disableTimeOut: true,
+                }
+              );
             }
           });
       }
     }
   }
 
-  // open range picker and unlock disabled dates
+  // open range picker and unlock disabled dates or lock undisabled dates and clean inputs
   openDatePicker(picker: MatDateRangePicker<Moment>) {
-    this.unlockButtonStatus = !this.unlockButtonStatus;
-    picker.open();
-  }
-
-  // lock undisabled dates and clean inputs
-  cleanDatePicker() {
-    this.unlockButtonStatus = false;
     this.start = undefined;
     this.end = undefined;
     this.arrayOfObjectRangeDates = [];
-  }
-
-  showSuccess() {
-    this._toastr.success('Hello world!', 'Toastr fun!');
+    this.unlockButtonStatus = !this.unlockButtonStatus;
+    picker.open();
   }
 }

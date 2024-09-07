@@ -1,20 +1,45 @@
-<div class="w-[600px] py-6 px-8">
-  <form [formGroup]="addForm" (ngSubmit)="onFormSubmit()">
-    <legend class="text-center text-xl font-bold pb-4">
-      Заполните форму для записи
+<form
+  [formGroup]="addForm"
+  (ngSubmit)="onFormSubmit()"
+  class="md:p-[10px] min-h-[295px] max-h-[375px] overflow-y-auto"
+>
+  <div class="min-[320px]:sticky min-[320px]:top-0 min-[320px]:z-[10] bg-white">
+    <legend
+      class="text-center min-[320px]:font-semibold min-[320px]:text-[15px] leading-[40px] md:text-xl md:font-bold"
+    >
+      Новая запись
     </legend>
-    <mat-divider></mat-divider>
+    <div class="absolute min-[320px]:top-[0px] md:top-[-10px] right-0">
+      <button
+        tabindex="-1"
+        type="button"
+        [ngClass]="'scale-[0.7]'"
+        (click)="onCancel()"
+        mat-mini-fab
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
 
-    <div class="grid grid-cols-2 grid-rows-2 gap-3 pt-6">
+  <mat-divider></mat-divider>
+
+  <div
+    class="min-[320px]:p-[10px_2px_2px_2px] min-[360px]:p-[15px_10px_10px_10px]"
+  >
+    <div
+      class="grid justify-items-center min-[320px]:grid-cols-1 min-[320px]:grid-rows-3 md:grid-cols-2 md:grid-rows-2 gap-3"
+    >
       <mat-form-field appearance="outline">
         <mat-label>Имя и Фамилия</mat-label>
         <input
           matInput
           type="text"
           name="name"
-          maxLength="40"
+          maxLength="30"
           placeholder="Имя и Фамилия"
           formControlName="name"
+          autocomplete="off"
           [errorStateMatcher]="matcher"
         />
         <mat-icon matSuffix class="text-gray-500">badge</mat-icon>
@@ -32,12 +57,13 @@
           matInput
           type="text"
           name="phone"
+          autocomplete="off"
+          formControlName="phone"
           [showMaskTyped]="true"
+          mask="(000)-00-000"
           prefix="+373"
           [dropSpecialCharacters]="false"
-          mask="(000)-00-000"
           [errorStateMatcher]="matcher"
-          formControlName="phone"
         />
         <mat-icon matSuffix class="text-gray-500">call</mat-icon>
         <mat-error *ngIf="addForm.get('phone')?.hasError('required')">
@@ -54,6 +80,7 @@
           matInput
           type="email"
           name="email"
+          autocomplete="off"
           placeholder="Адрес почты"
           [errorStateMatcher]="matcher"
           formControlName="email"
@@ -90,7 +117,7 @@
       </mat-form-field>
     </div>
 
-    <div class="pt-3 pb-3 grid grid-cols-1 grid-rows-1">
+    <div class="pt-[5px] pb-[10px] grid grid-cols-1 grid-rows-1">
       <mat-form-field *ngIf="timeStatus" appearance="outline">
         <mat-label>Выберите время</mat-label>
         <mat-select
@@ -110,18 +137,14 @@
       </mat-form-field>
     </div>
 
-    <button type="submit" [disabled]="!addForm.valid" mat-raised-button>
+    <button
+      type="submit"
+      class="w-full"
+      [disabled]="!addForm.valid"
+      mat-raised-button
+    >
       <mat-icon class="text-gray-500">person_add</mat-icon>
       {{ "сделать запись" | uppercase }}
     </button>
-    <button
-      type="button"
-      (click)="onCancel()"
-      color="primary"
-      mat-raised-button
-    >
-      <mat-icon class="text-stone-50">close</mat-icon>
-      {{ "назад" | uppercase }}
-    </button>
-  </form>
-</div>
+  </div>
+</form>

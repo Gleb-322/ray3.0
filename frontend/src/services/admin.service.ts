@@ -11,22 +11,36 @@ export class AdminService {
 
   //login admin
   postLoginAdmin(body: IAdmin): Observable<{
-    body: any;
-    token: string;
+    token: string | null;
     errorMessage: null | string;
     errorCode: number;
   }> {
     return this._http.post<{
-      body: any;
-      token: string;
+      token: string | null;
       errorMessage: null | string;
       errorCode: number;
     }>('http://localhost:3000/admin/login', body);
   }
 
   // logout admin
-  logOutAdmin(): void {
-    // this.loginStatus = false;
+  logOutAdmin(body: string): Observable<{
+    message: string;
+    errorCode: number;
+  }> {
+    const bodyObj = {
+      token: body,
+    };
+
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+    });
+
+    const requestOptions = { headers };
+    return this._http.post<{
+      message: string;
+      errorCode: number;
+    }>('http://localhost:3000/admin/logout', bodyObj, requestOptions);
   }
 
   // get all patients
@@ -35,24 +49,22 @@ export class AdminService {
     limit: number,
     keyword: string = ''
   ): Observable<{
-    body: IPatients[];
+    body: IPatients[] | null;
     count: number | null;
     errorMessage: string | null;
-    success: boolean;
     errorCode: number;
   }> {
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
+      Authorization: `Bearer ${sessionStorage.getItem('token')}`,
     });
 
     const requestOptions = { headers };
 
     return this._http.get<{
-      body: IPatients[];
+      body: IPatients[] | null;
       count: number | null;
       errorMessage: string | null;
-      success: boolean;
       errorCode: number;
     }>(
       `http://localhost:3000/admin/patients?page=${page}&limit=${limit}&keyword=${keyword}`,
@@ -62,21 +74,19 @@ export class AdminService {
 
   //update patient
   updatePatients(body: IPatients): Observable<{
-    body: IPatients;
+    body: IPatients | null;
     errorMessage: string | null;
-    success: boolean;
     errorCode: number;
   }> {
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
+      Authorization: `Bearer ${sessionStorage.getItem('token')}`,
     });
     const requestOptions = { headers };
 
     return this._http.patch<{
-      body: IPatients;
+      body: IPatients | null;
       errorMessage: string | null;
-      success: boolean;
       errorCode: number;
     }>('http://localhost:3000/admin/patients', body, requestOptions);
   }
@@ -84,22 +94,20 @@ export class AdminService {
   // delete patient
 
   deletePatient(_id: string): Observable<{
-    body: IPatients;
+    body: IPatients | null;
     errorMessage: string | null;
-    success: boolean;
     errorCode: number;
   }> {
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('token')}`,
+      Authorization: `Bearer ${sessionStorage.getItem('token')}`,
     });
 
     const requestOptions = { headers };
 
     return this._http.delete<{
-      body: IPatients;
+      body: IPatients | null;
       errorMessage: string | null;
-      success: boolean;
       errorCode: number;
     }>(`http://localhost:3000/admin/patients/${_id}`, requestOptions);
   }

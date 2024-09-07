@@ -15,13 +15,14 @@ import { MatMomentDateModule } from '@angular/material-moment-adapter';
 import { MatListModule } from '@angular/material/list';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import {
   MAT_DIALOG_DATA,
   MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
 import { MatSortModule } from '@angular/material/sort';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { FormControl, FormGroupDirective, NgForm } from '@angular/forms';
 
 import { ErrorStateMatcher } from '@angular/material/core';
@@ -73,7 +74,8 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
     MatPaginatorModule,
     MatDialogModule,
     MatSortModule,
-    MatSnackBarModule,
+    MatButtonToggleModule,
+    MatExpansionModule,
   ],
   providers: [
     {

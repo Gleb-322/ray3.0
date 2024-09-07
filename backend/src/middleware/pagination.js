@@ -7,7 +7,6 @@ const pagination = async (req, res, next) => {
 		const limit = parseInt(req.query.limit)
 
 		const startIndex = (page - 1) * limit
-		const endIndex = page * limit
 
 		if (req.query.keyword) {
 			paginatedPatients = await Patients.find({
@@ -27,8 +26,12 @@ const pagination = async (req, res, next) => {
 			})
 				.limit(limit)
 				.skip(startIndex)
+				.sort({ createdAt: -1 })
 		} else {
-			paginatedPatients = await Patients.find({}).limit(limit).skip(startIndex)
+			paginatedPatients = await Patients.find({})
+				.limit(limit)
+				.skip(startIndex)
+				.sort({ createdAt: -1 })
 		}
 
 		if (!paginatedPatients) {
@@ -37,13 +40,12 @@ const pagination = async (req, res, next) => {
 
 		const countPatients = await Patients.countDocuments()
 
-		req.paginatedResult = paginatedPatients
-		req.endIndex = endIndex
+		req.patientsPerPage = paginatedPatients
 		req.count = countPatients
 
 		next()
 	} catch (e) {
-		res.status(200).send({ error: 'mid-re paginate' })
+		res.status(200).send({ error: 'Что-то пошло не так с пагинацией!' })
 	}
 }
 

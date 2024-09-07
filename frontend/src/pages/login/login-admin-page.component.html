@@ -1,15 +1,19 @@
-<div class="bg-slate-200 w-screen h-screen flex justify-center items-center">
-  <mat-card class="w-[450px] h-[400px] p-[20px] flex flex-col items-center">
+<div
+  class="bg-amber-100 w-screen h-screen flex justify-center min-[320px]:items-start min-[320px]:pt-[5px] min-[360px]:p-0 min-[360px]:items-center"
+>
+  <mat-card
+    class="w-[450px] min-[320px]:p-[1px] min-[360px]:p-[5px] sm:p-[10px] flex flex-col items-center"
+  >
     <mat-card-header>
-      <div class="">Админ панель</div>
+      <div class="font-semibold text-lg">Админ панель</div>
     </mat-card-header>
-    <mat-card-content class="w-full h-full">
+    <mat-card-content class="w-full h-full min-[320px]:p-[1px] sm:p-[10px]">
       <form
-        class="w-full grid grid-raws-[repeat(4,80px)] gap-[10px] mt-[5px]"
+        class="w-full flex flex-col mt-[5px]"
         [formGroup]="adminForm"
         (ngSubmit)="onFormSubmit()"
       >
-        <mat-form-field appearance="outline">
+        <mat-form-field class="mt-[5px]" appearance="outline">
           <mat-label>Логин</mat-label>
           <input
             type="text"
@@ -24,7 +28,7 @@
           </mat-error>
         </mat-form-field>
 
-        <mat-form-field appearance="outline">
+        <mat-form-field class="mt-[5px]" appearance="outline">
           <mat-label>Пароль</mat-label>
           <input
             matInput
@@ -52,16 +56,15 @@
           {{ errorMessage }}
         </div>
 
-        <div>
-          <button
-            type="submit"
-            [disabled]="!adminForm.valid"
-            mat-stroked-button
-          >
-            <mat-icon>input</mat-icon>
-            {{ "войти" | uppercase }}
-          </button>
-        </div>
+        <button
+          type="submit"
+          class="mt-[5px]"
+          [disabled]="!adminForm.valid"
+          mat-stroked-button
+        >
+          <mat-icon>input</mat-icon>
+          {{ "войти" | uppercase }}
+        </button>
       </form>
     </mat-card-content>
   </mat-card>

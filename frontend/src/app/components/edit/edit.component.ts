@@ -1,7 +1,11 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { FormControl, Validators, FormGroup } from '@angular/forms';
 
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import {
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+  MatDialog,
+} from '@angular/material/dialog';
 
 import { MatDatepickerInputEvent } from '@angular/material/datepicker';
 
@@ -24,6 +28,8 @@ import { IPatients } from '../../../types/types';
 import { MY_FORMATS } from '../../material.module';
 import { AdminService } from '../../../services/admin.service';
 import { DisabledDatesService } from '../../../services/disabled-dates.service';
+import { ToastrService } from 'ngx-toastr';
+import { DialogComponent } from '../dialog/dialog.component';
 
 const moment = _rollupMoment || _moment;
 
@@ -54,11 +60,14 @@ export class EditComponent implements OnInit {
     private _adminService: AdminService,
     private _disabledDateService: DisabledDatesService,
     private _dialogRef: MatDialogRef<EditComponent>,
+    private _dialog: MatDialog,
+    private _toastr: ToastrService,
     @Inject(MAT_DIALOG_DATA) public editData: IPatients
   ) {
+    // bind context with date of datepicker
     this.sundayAndDisabledDatesFilter =
       this.sundayAndDisabledDatesFilter.bind(this);
-
+    // create edit form
     this.editForm = new FormGroup({
       name: new FormControl('', [
         Validators.required,
@@ -79,10 +88,11 @@ export class EditComponent implements OnInit {
     });
   }
   ngOnInit() {
+    // set calendar for CIS format
     this._dateAdapter.setLocale('ru-RU');
-
+    // get disanled dates from api
     this.getDisabledDates();
-
+    // set default value edit form`s fields
     if (this.editData) {
       this.editForm.controls['name'].setValue(this.editData.name!);
       this.editForm.controls['phone'].setValue(this.editData.phone!);
@@ -97,13 +107,21 @@ export class EditComponent implements OnInit {
           date: this.editData.date,
         };
         this._patientsService.postTimeByDate(bodyObject).subscribe((result) => {
-          console.log('on init', result);
-
-          if (result.body) {
-            this.arrEditTime = result.body;
-            this.arrEditTime.push(this.editData.time!);
-            this.arrEditTime.sort();
-            this.timeStatus = true;
+          if (result.errorCode === 0) {
+            if (result.body.length > 0) {
+              this.arrEditTime = result.body;
+              this.arrEditTime.push(this.editData.time!);
+              this.arrEditTime.sort();
+              this.timeStatus = true;
+            }
+          } else {
+            this._toastr.error(
+              `Не удалось получить массив времени.`,
+              'Ошибка сервера',
+              {
+                disableTimeOut: true,
+              }
+            );
           }
         });
       }
@@ -113,26 +131,38 @@ export class EditComponent implements OnInit {
   // get disabled dates from api
   getDisabledDates() {
     this._disabledDateService.getDisabledDates().subscribe((result) => {
-      if (result.body && result.body.length > 0) {
-        this.arrayDisabledDates = result.body.map((d) => d.disabledDate);
-        if (this.arrayDisabledDates.includes(this.editData.date!)) {
-          this.arrayDisabledDates = this.arrayDisabledDates.filter(
-            (d) => d !== this.editData.date!
-          );
+      if (result.errorCode === 0) {
+        if (result.body && result.body.length > 0) {
+          this.arrayDisabledDates = result.body.map((d) => d.disabledDate);
+          if (this.arrayDisabledDates.includes(this.editData.date!)) {
+            this.arrayDisabledDates = this.arrayDisabledDates.filter(
+              (d) => d !== this.editData.date!
+            );
+          }
+        } else {
+          this.arrayDisabledDates = [];
         }
-        console.log('getDisabledDates', this.arrayDisabledDates);
-      } else {
-        this.arrayDisabledDates = [];
+      }
+      if (result.errorCode === 1) {
+        this._toastr.error(
+          `Не удалось получить массив заблокированных дат.`,
+          'Ошибка сервера',
+          {
+            disableTimeOut: true,
+          }
+        );
       }
     });
   }
 
+  // filter date by Sunday and disabled dates
   sundayAndDisabledDatesFilter(date: Moment | null) {
     const day = date?.isoWeekday();
     const input = moment(date).format('DD-MM-YYYY');
     return day !== 7 && !this.arrayDisabledDates.includes(input);
   }
 
+  // time field handler
   onChangeDate(event: MatDatepickerInputEvent<Moment>) {
     const cisDateFormat = event.value?.format('DD-MM-YYYY');
     if (cisDateFormat) {
@@ -140,44 +170,106 @@ export class EditComponent implements OnInit {
         date: cisDateFormat,
       };
       this._patientsService.postTimeByDate(bodyObject).subscribe((result) => {
-        console.log('onChangeDateEdit', result);
-        if (result.body) {
-          if (bodyObject.date === this.editData.date) {
-            this.arrEditTime = result.body;
-            this.arrEditTime.push(this.editData.time!);
-            this.arrEditTime.sort();
-            this.timeStatus = true;
-          } else {
-            this.arrEditTime = result.body;
+        if (result.errorCode === 0) {
+          if (result.body.length > 0) {
+            if (bodyObject.date === this.editData.date) {
+              this.arrEditTime = result.body;
+              this.arrEditTime.push(this.editData.time!);
+              this.arrEditTime.sort();
+              this.timeStatus = true;
+            } else {
+              this.arrEditTime = result.body;
+            }
           }
+        } else {
+          this._toastr.error(
+            `Не удалось получить массив времени.`,
+            'Ошибка сервера',
+            {
+              disableTimeOut: true,
+            }
+          );
         }
       });
     }
   }
 
+  // form submit handler
   onFormSubmit() {
-    if (this.editForm.valid) {
-      const bodyObject: IPatients = {
-        name: this.editForm.value?.name,
-        phone: this.editForm.value?.phone,
-        email: this.editForm.value?.email,
-        previousEmail: this.editData.email!,
-        date: this.editForm.value?.date?.format('DD-MM-YYYY'),
-        previousDate: this.editData.date!,
-        time: this.editForm.value?.time,
-        previousTime: this.editData.time!,
-        _id: this.editData._id,
-      };
-      if (bodyObject) {
-        this._adminService.updatePatients(bodyObject).subscribe((result) => {
-          alert('suc Update appointment');
-          console.log('resUpdatePatientfromADMIN', result);
-          this._dialogRef.close(true);
-        });
+    let dialogRef = this._dialog.open(DialogComponent, {
+      data: {
+        title: 'Изменение записи',
+        body: 'Действительно хотите изменить запись?',
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result: boolean) => {
+      if (result) {
+        if (this.editForm.valid) {
+          const bodyObject: IPatients = {
+            name: this.editForm.value?.name,
+            phone: this.editForm.value?.phone,
+            email: this.editForm.value?.email,
+            previousEmail: this.editData.email!,
+            date: this.editForm.value?.date?.format('DD-MM-YYYY'),
+            previousDate: this.editData.date!,
+            time: this.editForm.value?.time,
+            previousTime: this.editData.time!,
+            _id: this.editData._id,
+          };
+          if (bodyObject) {
+            this._adminService
+              .updatePatients(bodyObject)
+              .subscribe((result) => {
+                if (result.errorCode === 0) {
+                  if (result.body) {
+                    this._toastr.success(`Запись успешно обновлена!`, '', {
+                      progressBar: true,
+                    });
+                  }
+                }
+
+                if (result.errorCode === 1) {
+                  this._toastr.error(
+                    `Что-то пошло не так, попробуйте снова.`,
+                    'Ошибка сервера',
+                    {
+                      disableTimeOut: true,
+                    }
+                  );
+                }
+
+                if (result.errorCode === 2) {
+                  this._toastr.error(
+                    `Не удалось найти пациента!`,
+                    'Ошибка сервера',
+                    {
+                      disableTimeOut: true,
+                    }
+                  );
+                }
+
+                if (result.errorCode === 3) {
+                  this._toastr.error(
+                    `Не удалось отправить сообщение на указанную почту.`,
+                    'Ошибка отправки почты',
+                    {
+                      disableTimeOut: true,
+                    }
+                  );
+                }
+
+                this._dialogRef.close(true);
+              });
+          }
+        }
+      } else {
+        this._dialogRef.close();
       }
-    }
+    });
   }
 
+  // close dialog
   onCancel() {
     this._dialogRef.close();
   }

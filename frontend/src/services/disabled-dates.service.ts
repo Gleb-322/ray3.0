@@ -9,37 +9,37 @@ import { IRangeDate } from '../types/types';
 export class DisabledDatesService {
   constructor(private _http: HttpClient) {}
 
-  postDisabledDates(body: IRangeDate[]): Observable<{
-    body: string;
-    errorMessage: string | null;
-    errorCode: number;
-  }> {
-    return this._http.post<{
-      body: string;
-      errorMessage: string | null;
-      errorCode: number;
-    }>('http://localhost:3000/disabledDates', body);
-  }
-
   getDisabledDates(): Observable<{
-    body: IRangeDate[];
+    body: IRangeDate[] | null;
     errorMessage: string | null;
     errorCode: number;
   }> {
     return this._http.get<{
-      body: IRangeDate[];
+      body: IRangeDate[] | null;
       errorMessage: string | null;
       errorCode: number;
     }>('http://localhost:3000/disabledDates');
   }
 
-  postUnlockDisabledDates(body: IRangeDate[]): Observable<{
-    body: string;
+  postDisabledDates(body: IRangeDate[]): Observable<{
+    body: string | null;
     errorMessage: string | null;
     errorCode: number;
   }> {
     return this._http.post<{
-      body: string;
+      body: string | null;
+      errorMessage: string | null;
+      errorCode: number;
+    }>('http://localhost:3000/disabledDates', body);
+  }
+
+  postUnlockDisabledDates(body: IRangeDate[]): Observable<{
+    body: string | null;
+    errorMessage: string | null;
+    errorCode: number;
+  }> {
+    return this._http.post<{
+      body: string | null;
       errorMessage: string | null;
       errorCode: number;
     }>('http://localhost:3000/undisabledDates', body);

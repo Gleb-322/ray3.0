@@ -93,17 +93,14 @@ export class RegPageComponent implements OnInit {
   // get disabled dates from api
   getDisabledDates() {
     this._disabledDateService.getDisabledDates().subscribe((result) => {
-      console.log('getDisabledDates result', result);
       if (result.errorCode === 0) {
         if (result.body && result.body.length > 0) {
           this.arrayDisabledDates = result.body.map((d) => d.disabledDate);
-
-          console.log('getDisabledDates', this.arrayDisabledDates);
         } else {
           this.arrayDisabledDates = [];
-          console.log('getDisabledDates', this.arrayDisabledDates);
         }
       }
+
       if (result.errorCode === 1) {
         this._toastr.error(
           `Не удалось получить массив заблокированных дат.`,
@@ -178,15 +175,19 @@ export class RegPageComponent implements OnInit {
 
       if (bodyObject) {
         this._patientsService.postPatients(bodyObject).subscribe((result) => {
-          console.log('respostpatient', result);
           if (result.errorCode === 0) {
-            this._toastr.success(
-              `Вы успешно оформили запись на ${result.body.date}, время: ${result.body.time}`,
-              'Спасибо за регистрацию',
-              {
-                disableTimeOut: true,
-              }
-            );
+            if (result.body) {
+              this._toastr.success(
+                `
+                  Вы успешно оформили запись на ${result.body.date}, время: ${result.body.time}
+                `,
+                'Спасибо за регистрацию',
+                {
+                  disableTimeOut: true,
+                  closeButton: true,
+                }
+              );
+            }
           }
           if (result.errorCode === 1) {
             this._toastr.error(
