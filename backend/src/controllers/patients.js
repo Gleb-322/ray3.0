@@ -1,10 +1,21 @@
 const Patients = require('../models/patient')
 const DisabledDates = require('../models/disabledDates')
 const { sendEmail } = require('../emails/email')
+const socket = require('../socket')
 
 const createPatient = async (req, res) => {
 	try {
 		const { email, date, time } = req.body
+
+		const existPatient = await Patients.findOne({ date, time })
+
+		if (existPatient) {
+			return res.send({
+				body: existPatient,
+				errorMessage: null,
+				errorCode: 3,
+			})
+		}
 
 		const patient = new Patients(req.body)
 		await patient.save()
@@ -31,6 +42,8 @@ const createPatient = async (req, res) => {
 			})
 			await disDate.save()
 		}
+
+		getCreatedPatient(patient.date)
 
 		res.status(201).send({
 			body: patient,

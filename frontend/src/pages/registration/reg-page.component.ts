@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import {
   FormControl,
   Validators,
@@ -30,6 +30,7 @@ import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 import { DisabledDatesService } from '../../services/disabled-dates.service';
+import { WebSocketService } from '../../services/web-socket.service';
 
 const moment = _rollupMoment || _moment;
 
@@ -43,8 +44,9 @@ const lang = moment.locale('ru');
     { provide: MAT_DATE_FORMATS, useValue: MY_FORMATS },
   ],
 })
-export class RegPageComponent implements OnInit {
+export class RegPageComponent implements OnInit, OnDestroy {
   patientForm;
+  cisDateFormat: string | undefined;
   timeStatus = false;
   phoneErrorMessage: string | null = null;
   arrTimes: string[] = [];
@@ -55,6 +57,7 @@ export class RegPageComponent implements OnInit {
     private _dateAdapter: DateAdapter<Date>,
     private _patientsService: PatientsService,
     private _disabledDateService: DisabledDatesService,
+    private _socket: WebSocketService,
     private _router: Router,
     private _toastr: ToastrService
   ) {
@@ -88,6 +91,31 @@ export class RegPageComponent implements OnInit {
     this._dateAdapter.setLocale('ru-RU');
     // get disanled dates from api
     this.getDisabledDates();
+
+    this.getCreatedPatient();
+  }
+
+  ngOnDestroy() {
+    //disconnect socket
+    this._socket.disconnect();
+  }
+
+  sendDate(object: { date: string }) {
+    this._socket.emit('date', object);
+  }
+
+  getCreatedPatient() {
+    this._socket.on('registratedPatient', (date: string) => {
+      console.log(date);
+      if (this.cisDateFormat && date) {
+        this.patientForm.controls['date'].setValue(null);
+        this.patientForm.controls['time'].setValue(null);
+        this.cisDateFormat = '';
+
+        this.getTimeByDate(date);
+        this.getDisabledDates();
+      }
+    });
   }
 
   // get disabled dates from api
@@ -136,29 +164,33 @@ export class RegPageComponent implements OnInit {
     return day !== 7 && !this.arrayDisabledDates.includes(input);
   }
 
+  getTimeByDate(date: string) {
+    const bodyObject = {
+      date,
+    };
+    this._patientsService.postTimeByDate(bodyObject).subscribe((result) => {
+      if (result.errorCode === 0) {
+        if (result.body.length > 0) {
+          this.arrTimes = result.body;
+          this.timeStatus = true;
+        }
+      } else {
+        this._toastr.error(
+          `Не удалось получить массив времени.`,
+          'Ошибка сервера',
+          {
+            disableTimeOut: true,
+          }
+        );
+      }
+    });
+  }
   // time field handler
   onChangeDate(event: MatDatepickerInputEvent<Moment>) {
-    const cisDateFormat = event.value?.format('DD-MM-YYYY');
-    if (cisDateFormat) {
-      const bodyObject = {
-        date: cisDateFormat,
-      };
-      this._patientsService.postTimeByDate(bodyObject).subscribe((result) => {
-        if (result.errorCode === 0) {
-          if (result.body.length > 0) {
-            this.arrTimes = result.body;
-            this.timeStatus = true;
-          }
-        } else {
-          this._toastr.error(
-            `Не удалось получить массив времени.`,
-            'Ошибка сервера',
-            {
-              disableTimeOut: true,
-            }
-          );
-        }
-      });
+    this.cisDateFormat = event.value?.format('DD-MM-YYYY');
+
+    if (this.cisDateFormat) {
+      this.getTimeByDate(this.cisDateFormat);
     }
   }
 
@@ -190,6 +222,7 @@ export class RegPageComponent implements OnInit {
             }
           }
           if (result.errorCode === 1) {
+            console.log(result.errorMessage);
             this._toastr.error(
               `Что-то пошло не так, попробуйте снова.`,
               'Ошибка сервера',
@@ -206,6 +239,18 @@ export class RegPageComponent implements OnInit {
                 disableTimeOut: true,
               }
             );
+          }
+          if (result.errorCode === 3) {
+            if (result.body) {
+              this._toastr.error(
+                `Запись с датой ${result.body.date} и временем ${result.body.time} уже существует!`,
+                'Выберите другую дату!',
+                {
+                  disableTimeOut: true,
+                  closeButton: true,
+                }
+              );
+            }
           }
           this._router.navigate(['/preview']);
         });

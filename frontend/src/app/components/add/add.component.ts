@@ -180,6 +180,19 @@ export class AddComponent implements OnInit {
                     }
                   );
                 }
+
+                if (result.errorCode === 3) {
+                  if (result.body) {
+                    this._toastr.error(
+                      `Запись с датой ${result.body.date} и временем ${result.body.time} уже существует!`,
+                      'Выберите другую дату!',
+                      {
+                        disableTimeOut: true,
+                        closeButton: true,
+                      }
+                    );
+                  }
+                }
                 this._dialogRef.close(true);
               });
           }

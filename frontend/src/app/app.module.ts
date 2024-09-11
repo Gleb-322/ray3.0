@@ -29,6 +29,8 @@ import { AnalyticsPageComponent } from '../pages/analytics-page/analytics-page.c
 import { PatientsPageComponent } from '../pages/patients-page/patients-page.component';
 import { PolicyPageComponent } from '../pages/policy-page/policy-page.component';
 
+import { WebSocketService } from '../services/web-socket.service';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -62,6 +64,7 @@ import { PolicyPageComponent } from '../pages/policy-page/policy-page.component'
     provideNgxMask(),
     provideMomentDateAdapter(),
     provideToastr(),
+    WebSocketService,
   ],
   bootstrap: [AppComponent],
 })
