@@ -30,7 +30,7 @@ import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 import { DisabledDatesService } from '../../services/disabled-dates.service';
-import { WebSocketService } from '../../services/web-socket.service';
+import { SocketService } from '../../services/web-socket.service';
 
 const moment = _rollupMoment || _moment;
 
@@ -45,6 +45,8 @@ const lang = moment.locale('ru');
   ],
 })
 export class RegPageComponent implements OnInit, OnDestroy {
+  readonlyInputDate = true;
+  disDate: string | null = null;
   patientForm;
   cisDateFormat: string | undefined;
   timeStatus = false;
@@ -57,7 +59,7 @@ export class RegPageComponent implements OnInit, OnDestroy {
     private _dateAdapter: DateAdapter<Date>,
     private _patientsService: PatientsService,
     private _disabledDateService: DisabledDatesService,
-    private _socket: WebSocketService,
+    private _socketService: SocketService,
     private _router: Router,
     private _toastr: ToastrService
   ) {
@@ -91,31 +93,50 @@ export class RegPageComponent implements OnInit, OnDestroy {
     this._dateAdapter.setLocale('ru-RU');
     // get disanled dates from api
     this.getDisabledDates();
-
+    //connect socket
+    if (!this._socketService.isConnected()) {
+      this._socketService.connect();
+    }
+    //function with socket service for already created patient
     this.getCreatedPatient();
+    //function with socket service for get already disabled date
+    this.getDisableDateWhenCreatedPatient();
   }
 
   ngOnDestroy() {
-    //disconnect socket
-    this._socket.disconnect();
+    // destroy socket connection
+    this._socketService.disconnect();
   }
 
-  sendDate(object: { date: string }) {
-    this._socket.emit('date', object);
-  }
-
+  // get already created patient
   getCreatedPatient() {
-    this._socket.on('registratedPatient', (date: string) => {
-      console.log(date);
+    this._socketService.getDateCreatedPatient().subscribe((date) => {
       if (this.cisDateFormat && date) {
-        this.patientForm.controls['date'].setValue(null);
-        this.patientForm.controls['time'].setValue(null);
+        if (this.disDate) {
+          this.readonlyInputDate = false;
+          this.patientForm.controls['date'].setValue(null);
+          this.arrTimes = [];
+          this.timeStatus = false;
+        } else {
+          this.getTimeByDate(date);
+          this.patientForm.controls['time'].setValue(null);
+        }
+        this.patientForm.controls['phone'].setValue(null);
         this.cisDateFormat = '';
-
-        this.getTimeByDate(date);
-        this.getDisabledDates();
+        this.readonlyInputDate = true;
       }
     });
+  }
+  //get disabled date
+  getDisableDateWhenCreatedPatient() {
+    this._socketService
+      .getDisableDateWhenCreatedPatient()
+      .subscribe((disDate) => {
+        if (disDate) {
+          this.disDate = disDate;
+          this.arrayDisabledDates.push(this.disDate);
+        }
+      });
   }
 
   // get disabled dates from api
@@ -124,6 +145,7 @@ export class RegPageComponent implements OnInit, OnDestroy {
       if (result.errorCode === 0) {
         if (result.body && result.body.length > 0) {
           this.arrayDisabledDates = result.body.map((d) => d.disabledDate);
+          console.log('getDisabledDates', this.arrayDisabledDates);
         } else {
           this.arrayDisabledDates = [];
         }
@@ -164,11 +186,14 @@ export class RegPageComponent implements OnInit, OnDestroy {
     return day !== 7 && !this.arrayDisabledDates.includes(input);
   }
 
+  // get time array of selecked date
   getTimeByDate(date: string) {
     const bodyObject = {
       date,
     };
+
     this._patientsService.postTimeByDate(bodyObject).subscribe((result) => {
+      console.log('get time', result);
       if (result.errorCode === 0) {
         if (result.body.length > 0) {
           this.arrTimes = result.body;
@@ -219,10 +244,10 @@ export class RegPageComponent implements OnInit, OnDestroy {
                   closeButton: true,
                 }
               );
+              this._router.navigate(['/preview']);
             }
           }
           if (result.errorCode === 1) {
-            console.log(result.errorMessage);
             this._toastr.error(
               `Что-то пошло не так, попробуйте снова.`,
               'Ошибка сервера',
@@ -230,6 +255,7 @@ export class RegPageComponent implements OnInit, OnDestroy {
                 disableTimeOut: true,
               }
             );
+            this._router.navigate(['/preview']);
           }
           if (result.errorCode === 2) {
             this._toastr.error(
@@ -250,9 +276,9 @@ export class RegPageComponent implements OnInit, OnDestroy {
                   closeButton: true,
                 }
               );
+              this.patientForm.reset();
             }
           }
-          this._router.navigate(['/preview']);
         });
       }
     }

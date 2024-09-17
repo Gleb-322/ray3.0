@@ -90,7 +90,8 @@
         [matDatepicker]="picker"
         formControlName="date"
         name="date"
-        readonly
+        autocomplete="off"
+        [readonly]="readonlyInputDate"
         (click)="picker.open()"
         [errorStateMatcher]="matcher"
         (dateChange)="onChangeDate($event)"

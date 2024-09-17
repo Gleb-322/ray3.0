@@ -5,7 +5,7 @@ require('./db/mongoose')
 const { createServer } = require('http')
 const { Server } = require('socket.io')
 
-const socket = require('./socket')
+const socketHandler = require('./socket')
 
 const cors = require('cors')
 
@@ -19,6 +19,7 @@ const io = new Server(httpServer, {
 	cors: {
 		origin: 'http://localhost:4200',
 	},
+	methods: ['GET', 'POST'],
 })
 
 const PORT = process.env.PORT || 3000
@@ -47,7 +48,7 @@ app.use((error, req, res, next) => {
 	})
 })
 
-socket.start(io)
+socketHandler(io)
 
 httpServer.listen(PORT, () => {
 	console.log(`App is up on port ${PORT}`)

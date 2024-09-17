@@ -93,6 +93,7 @@ export class EditComponent implements OnInit {
     // get disanled dates from api
     this.getDisabledDates();
     // set default value edit form`s fields
+
     if (this.editData) {
       this.editForm.controls['name'].setValue(this.editData.name!);
       this.editForm.controls['phone'].setValue(this.editData.phone!);
@@ -108,10 +109,11 @@ export class EditComponent implements OnInit {
         };
         this._patientsService.postTimeByDate(bodyObject).subscribe((result) => {
           if (result.errorCode === 0) {
-            if (result.body.length > 0) {
+            if (result.body) {
               this.arrEditTime = result.body;
               this.arrEditTime.push(this.editData.time!);
               this.arrEditTime.sort();
+
               this.timeStatus = true;
             }
           } else {
@@ -134,6 +136,7 @@ export class EditComponent implements OnInit {
       if (result.errorCode === 0) {
         if (result.body && result.body.length > 0) {
           this.arrayDisabledDates = result.body.map((d) => d.disabledDate);
+
           if (this.arrayDisabledDates.includes(this.editData.date!)) {
             this.arrayDisabledDates = this.arrayDisabledDates.filter(
               (d) => d !== this.editData.date!
@@ -171,7 +174,7 @@ export class EditComponent implements OnInit {
       };
       this._patientsService.postTimeByDate(bodyObject).subscribe((result) => {
         if (result.errorCode === 0) {
-          if (result.body.length > 0) {
+          if (result.body) {
             if (bodyObject.date === this.editData.date) {
               this.arrEditTime = result.body;
               this.arrEditTime.push(this.editData.time!);

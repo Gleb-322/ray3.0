@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, Validators, FormGroup } from '@angular/forms';
 
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
@@ -25,6 +25,7 @@ import { MY_FORMATS } from '../../material.module';
 import { DisabledDatesService } from '../../../services/disabled-dates.service';
 import { ToastrService } from 'ngx-toastr';
 import { DialogComponent } from '../dialog/dialog.component';
+import { SocketService } from '../../../services/web-socket.service';
 
 const moment = _rollupMoment || _moment;
 
@@ -38,8 +39,10 @@ const lang = moment.locale('ru');
     { provide: MAT_DATE_FORMATS, useValue: MY_FORMATS },
   ],
 })
-export class AddComponent implements OnInit {
+export class AddComponent implements OnInit, OnDestroy {
   addForm;
+  disDate: string | null = null;
+  cisDateFormat: string | undefined;
   timeStatus = false;
   arrTimes: string[] = [];
   arrayDisabledDates: string[] = [];
@@ -49,6 +52,7 @@ export class AddComponent implements OnInit {
     private _dateAdapter: DateAdapter<Date>,
     private _patientsService: PatientsService,
     private _disabledDateService: DisabledDatesService,
+    private _socketService: SocketService,
     private _dialogRef: MatDialogRef<AddComponent>,
     private _dialog: MatDialog,
     private _toastr: ToastrService
@@ -81,16 +85,70 @@ export class AddComponent implements OnInit {
     this._dateAdapter.setLocale('ru-RU');
     // get disanled dates from api
     this.getDisabledDates();
+    //connect socket
+    if (!this._socketService.isConnected()) {
+      this._socketService.connect();
+    }
+    //function with socket service for already created patient
+    this.getCreatedPatient();
+    //function with socket service for get already disabled date
+    this.getDisableDateWhenCreatedPatient();
+  }
+
+  ngOnDestroy() {
+    // destroy socket connection
+    this._socketService.disconnect();
+  }
+
+  // get already created patient
+  getCreatedPatient() {
+    this._socketService.getDateCreatedPatient().subscribe((date) => {
+      if (this.cisDateFormat && date) {
+        if (this.disDate) {
+          this.addForm.controls['date'].setValue(null);
+          this.arrTimes = [];
+          this.timeStatus = false;
+        } else {
+          this.getTimeByDate(date);
+          this.addForm.controls['time'].setValue(null);
+        }
+        this.addForm.controls['phone'].setValue(null);
+        this.cisDateFormat = '';
+      }
+    });
+  }
+
+  //get disabled date
+  getDisableDateWhenCreatedPatient() {
+    this._socketService
+      .getDisableDateWhenCreatedPatient()
+      .subscribe((disDate) => {
+        if (disDate) {
+          this.disDate = disDate;
+          this.arrayDisabledDates.push(this.disDate);
+        }
+      });
   }
 
   // get disabled dates from api
   getDisabledDates() {
     this._disabledDateService.getDisabledDates().subscribe((result) => {
-      if (result.body && result.body.length > 0) {
-        this.arrayDisabledDates = result.body.map((d) => d.disabledDate);
-        console.log('getDisabledDates', this.arrayDisabledDates);
-      } else {
-        this.arrayDisabledDates = [];
+      if (result.errorCode === 0) {
+        if (result.body && result.body.length > 0) {
+          this.arrayDisabledDates = result.body.map((d) => d.disabledDate);
+        } else {
+          this.arrayDisabledDates = [];
+        }
+      }
+
+      if (result.errorCode === 1) {
+        this._toastr.error(
+          `Не удалось получить массив заблокированных дат.`,
+          'Ошибка сервера',
+          {
+            disableTimeOut: true,
+          }
+        );
       }
     });
   }
@@ -102,29 +160,35 @@ export class AddComponent implements OnInit {
     return day !== 7 && !this.arrayDisabledDates.includes(input);
   }
 
+  // get time array of selecked date
+  getTimeByDate(date: string) {
+    const bodyObject = {
+      date,
+    };
+    this._patientsService.postTimeByDate(bodyObject).subscribe((result) => {
+      if (result.errorCode === 0) {
+        if (result.body.length > 0) {
+          this.arrTimes = result.body;
+          this.timeStatus = true;
+        }
+      } else {
+        this._toastr.error(
+          `Не удалось получить массив времени.`,
+          'Ошибка сервера',
+          {
+            disableTimeOut: true,
+          }
+        );
+      }
+    });
+  }
+
   // time field handler
   onChangeDate(event: MatDatepickerInputEvent<Moment>) {
-    const cisDateFormat = event.value?.format('DD-MM-YYYY');
-    if (cisDateFormat) {
-      const bodyObject = {
-        date: cisDateFormat,
-      };
-      this._patientsService.postTimeByDate(bodyObject).subscribe((result) => {
-        if (result.errorCode === 0) {
-          if (result.body.length > 0) {
-            this.arrTimes = result.body;
-            this.timeStatus = true;
-          }
-        } else {
-          this._toastr.error(
-            `Не удалось получить массив времени.`,
-            'Ошибка сервера',
-            {
-              disableTimeOut: true,
-            }
-          );
-        }
-      });
+    this.cisDateFormat = event.value?.format('DD-MM-YYYY');
+
+    if (this.cisDateFormat) {
+      this.getTimeByDate(this.cisDateFormat);
     }
   }
 
@@ -151,6 +215,7 @@ export class AddComponent implements OnInit {
             this._patientsService
               .postPatients(bodyObject)
               .subscribe((result) => {
+                console.log(result);
                 if (result.errorCode === 0) {
                   if (result.body) {
                     this._toastr.success(
@@ -160,6 +225,7 @@ export class AddComponent implements OnInit {
                         progressBar: true,
                       }
                     );
+                    this._dialogRef.close(true);
                   }
                 }
                 if (result.errorCode === 1) {
@@ -170,6 +236,7 @@ export class AddComponent implements OnInit {
                       disableTimeOut: true,
                     }
                   );
+                  this._dialogRef.close(true);
                 }
                 if (result.errorCode === 2) {
                   this._toastr.error(
@@ -179,6 +246,7 @@ export class AddComponent implements OnInit {
                       disableTimeOut: true,
                     }
                   );
+                  this._dialogRef.close(false);
                 }
 
                 if (result.errorCode === 3) {
@@ -191,9 +259,9 @@ export class AddComponent implements OnInit {
                         closeButton: true,
                       }
                     );
+                    this._dialogRef.close(false);
                   }
                 }
-                this._dialogRef.close(true);
               });
           }
         }

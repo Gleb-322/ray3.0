@@ -181,7 +181,7 @@ export class PatientsPageComponent implements AfterViewInit, OnInit {
   //create new patient
   openAddForm() {
     let dialogRef = this._dialog.open(AddComponent);
-    dialogRef.afterClosed().subscribe((close) => {
+    dialogRef.afterClosed().subscribe((close: boolean) => {
       if (close) {
         this.getDisabledDates();
         this.getPatientsList(this.page, this.limit, this.inputValue);

@@ -1,7 +1,18 @@
 const Patients = require('../models/patient')
 const DisabledDates = require('../models/disabledDates')
 const { sendEmail } = require('../emails/email')
-const socket = require('../socket')
+const cron = require('node-cron')
+const moment = require('moment')
+
+const deleteAllPastPatients = async () => {
+	const yesterday = moment().subtract(1, 'days').format('DD-MM-YYYY')
+
+	await Patients.deleteMany({ date: yesterday })
+}
+
+cron.schedule('0 0 * * * *', () => {
+	deleteAllPastPatients()
+})
 
 const createPatient = async (req, res) => {
 	try {
@@ -41,15 +52,14 @@ const createPatient = async (req, res) => {
 				full: true,
 			})
 			await disDate.save()
+			getDisableDateWhenCreatedPatient(disDate.disabledDate)
 		}
-
-		getCreatedPatient(patient.date)
-
 		res.status(201).send({
 			body: patient,
 			errorMessage: null,
 			errorCode: 0,
 		})
+		getCreatedPatient(patient.date)
 	} catch (e) {
 		res.send({
 			body: null,

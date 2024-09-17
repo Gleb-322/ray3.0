@@ -211,9 +211,10 @@
 
         <tr *matNoDataRow>
           <td colspan="6">
-            По запросу "{{
+            @if(filterInput.value || timeFilter.value || dateFilter.value) { По
+            запросу "{{
               filterInput.value || timeFilter.value || dateFilter.value
-            }}" ничего не найдено...
+            }}" ничего не найдено... } @else { Ещё никто не записался... }
           </td>
         </tr>
       </table>
