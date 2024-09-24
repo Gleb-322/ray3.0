@@ -1,13 +1,17 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { IAdmin, IPatients } from '../types/types';
-import { Observable, tap } from 'rxjs';
+import { Observable } from 'rxjs';
+import { environment } from '../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AdminService {
-  constructor(private _http: HttpClient) {}
+  private baseUrl: string | undefined;
+  constructor(private _http: HttpClient) {
+    this.baseUrl = environment.baseUrl;
+  }
 
   //login admin
   postLoginAdmin(body: IAdmin): Observable<{
@@ -19,7 +23,7 @@ export class AdminService {
       token: string | null;
       errorMessage: null | string;
       errorCode: number;
-    }>('http://localhost:3000/admin/login', body);
+    }>(`${this.baseUrl}admin/login`, body);
   }
 
   // logout admin
@@ -40,7 +44,7 @@ export class AdminService {
     return this._http.post<{
       message: string;
       errorCode: number;
-    }>('http://localhost:3000/admin/logout', bodyObj, requestOptions);
+    }>(`${this.baseUrl}admin/logout`, bodyObj, requestOptions);
   }
 
   // get all patients
@@ -67,7 +71,7 @@ export class AdminService {
       errorMessage: string | null;
       errorCode: number;
     }>(
-      `http://localhost:3000/admin/patients?page=${page}&limit=${limit}&keyword=${keyword}`,
+      `${this.baseUrl}admin/patients?page=${page}&limit=${limit}&keyword=${keyword}`,
       requestOptions
     );
   }
@@ -88,11 +92,10 @@ export class AdminService {
       body: IPatients | null;
       errorMessage: string | null;
       errorCode: number;
-    }>('http://localhost:3000/admin/patients', body, requestOptions);
+    }>(`${this.baseUrl}admin/patients`, body, requestOptions);
   }
 
   // delete patient
-
   deletePatient(_id: string): Observable<{
     body: IPatients | null;
     errorMessage: string | null;
@@ -109,6 +112,6 @@ export class AdminService {
       body: IPatients | null;
       errorMessage: string | null;
       errorCode: number;
-    }>(`http://localhost:3000/admin/patients/${_id}`, requestOptions);
+    }>(`${this.baseUrl}admin/patients/${_id}`, requestOptions);
   }
 }

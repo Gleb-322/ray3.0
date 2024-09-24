@@ -133,7 +133,7 @@ export class PatientsPageComponent implements AfterViewInit, OnInit {
       .getAllPatients(page + 1, limit, keyword)
       .subscribe((result) => {
         if (result.errorCode === 0) {
-          if (result.body && result.count) {
+          if (result.body) {
             this.patients = result.body;
             this.patientsLength = result.count;
           }
@@ -203,15 +203,15 @@ export class PatientsPageComponent implements AfterViewInit, OnInit {
   }
 
   //delete selected patient
-  deletePatient(_id: string): void {
+  deletePatient(_id: string) {
     let dialogRef = this._dialog.open(DialogComponent, {
       data: {
         title: 'Удаление записи',
         body: 'Действительно хотите удалить выбранную запись?',
       },
     });
-    dialogRef.afterClosed().subscribe((result: boolean) => {
-      if (result) {
+    dialogRef.afterClosed().subscribe((close: boolean) => {
+      if (close) {
         this._adminService.deletePatient(_id).subscribe((result) => {
           if (result.errorCode === 0) {
             if (result.body) {

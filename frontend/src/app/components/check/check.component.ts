@@ -37,12 +37,11 @@ export class CheckComponent {
         phone: this.checkForm.value?.phone,
       };
       this.phoneNumber = bodyObject.phone;
-      console.log(bodyObject);
+
       if (bodyObject) {
         this._patientsService
           .postCheckPatient(bodyObject)
           .subscribe((result) => {
-            console.log('post Check Patient By Phone', result);
             if (result.errorCode === 0) {
               if (result.adminPhone) {
                 this.patientExist = false;

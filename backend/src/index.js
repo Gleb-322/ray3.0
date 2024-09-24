@@ -26,11 +26,9 @@ const PORT = process.env.PORT || 3000
 
 app.use(cors())
 app.use(express.json())
-app.use(patientsRouter)
-app.use(adminRouter)
-app.use(disableDatesRouter)
-// angular ?
-// app.use(express.static('angular'))
+app.use('/api', patientsRouter)
+app.use('/api', adminRouter)
+app.use('/api', disableDatesRouter)
 
 app.all('*', (req, res, next) => {
 	const routeError = new Error(
